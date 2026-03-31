@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+/* Optional: If Tailwind's "Preflight" is breaking your Bootstrap buttons, 
+   you can disable the base reset, but it's better to just write 
+   specific overrides here. */
+
+@layer base {
+  img {
+    @apply inline-block; /* Fixes Bootstrap image alignment */
+  }
+}
