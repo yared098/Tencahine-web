@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation"; // Added router for protection
 
 // 1. IMPORT ALL SUB-PAGES AS COMPONENTS
 import EditFAQ from "./edit-faq/page";
@@ -14,16 +15,32 @@ import EditPartners from "./edit-partners/page";
 import EditContact from "./edit-contact/page";
 
 export default function AdminDashboard() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // --- AUTH PROTECTION STATE ---
+  const [isAuthorized, setIsAuthorized] = useState(false);
+
+  useEffect(() => {
+    // Check if the token we set in login/page.js exists
+    const token = localStorage.getItem("tenachin_admin_token");
+    
+    if (!token) {
+      // If no token, bounce them back to the login page
+      router.push("/admin/login");
+    } else {
+      // If token exists, unlock the dashboard
+      setIsAuthorized(true);
+    }
+  }, [router]);
 
   // Close mobile menu whenever the tab changes
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [activeTab]);
 
-  // Updated management sections with your requested titles
   const managementSections = [
     { title: "Dashboard", icon: "bi-grid-1x2-fill", color: "bg-slate-800" },
     { title: "Hero & Brand", icon: "bi-stars", color: "bg-blue-600" },
@@ -35,6 +52,22 @@ export default function AdminDashboard() {
     { title: "Frequently asked", icon: "bi-question-diamond-fill", color: "bg-amber-500" },
     { title: "Contact Info", icon: "bi-geo-alt-fill", color: "bg-rose-500" },
   ];
+
+  // LOGOUT HANDLER
+  const handleLogout = () => {
+    localStorage.removeItem("tenachin_admin_token");
+    router.push("/admin/login");
+  };
+
+  // --- GATEKEEPER: Prevent UI flicker if not logged in ---
+  if (!isAuthorized) {
+    return (
+      <div className="h-screen w-screen flex flex-col items-center justify-center bg-slate-900">
+        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-white font-black italic tracking-widest text-[10px] uppercase">Verifying Operator Credentials...</p>
+      </div>
+    );
+  }
 
   const renderContent = () => {
     switch (activeTab) {
@@ -133,6 +166,14 @@ export default function AdminDashboard() {
           </div>
           
           <div className="flex items-center gap-2 sm:gap-4">
+             {/* LOGOUT BUTTON */}
+             <button 
+               onClick={handleLogout}
+               className="text-[8px] sm:text-[10px] font-black text-red-600 bg-red-50 hover:bg-red-600 hover:text-white px-3 py-2.5 rounded-full transition-all tracking-widest uppercase"
+             >
+               LOGOUT <i className="bi bi-power ml-1"></i>
+             </button>
+
              <Link href="/" target="_blank" className="text-[8px] sm:text-[10px] font-black text-blue-600 bg-blue-50 px-3 sm:px-5 py-2.5 rounded-full hover:bg-blue-600 hover:text-white transition-all tracking-widest uppercase truncate max-w-[100px] sm:max-w-none">
                 LIVE <span className="hidden xs:inline">SITE</span> <i className="bi bi-box-arrow-up-right ml-1"></i>
              </Link>
@@ -143,7 +184,7 @@ export default function AdminDashboard() {
         </header>
 
         <main className="p-4 md:p-8 max-w-6xl mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
-           {renderContent()}
+            {renderContent()}
         </main>
       </div>
     </div>

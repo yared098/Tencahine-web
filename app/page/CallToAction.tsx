@@ -14,74 +14,81 @@ const CallToAction: React.FC = () => {
   const [data, setData] = useState<CTAData | null>(null);
   const [loading, setLoading] = useState(true);
 
- useEffect(() => {
-  const fetchCTA = async () => {
-    // 1. Get the base URL from the environment variable
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  useEffect(() => {
+    const fetchCTA = async () => {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-    try {
-      // 2. Use the dynamic apiUrl for the request
-      const response = await fetch(`${apiUrl}/api/cta`);
-      const result = await response.json();
-      
-      // 3. Handle the response data structure
-      if (result.ctaData) {
-        setData(result.ctaData);
-      } else {
-        setData(result);
+      try {
+        const response = await fetch(`${apiUrl}/api/cta`, { 
+          cache: 'no-store' // Prevents old data from sticking
+        });
+        const result = await response.json();
+        
+        // Match the data structure from your backend presets
+        if (result.presets && result.activeID) {
+          const active = result.presets.find((p: any) => p.id === result.activeID);
+          setData(active || result.presets[0]);
+        } else {
+          setData(result.ctaData || result);
+        }
+      } catch (error) {
+        console.error("Error fetching CTA data:", error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching CTA data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  fetchCTA();
-}, []);
-  if (loading || !data) return null;
+    fetchCTA();
+  }, []);
+
+  // Prevent layout shift: show a simple dark placeholder while loading
+  if (loading) return <div className="py-20 bg-slate-900"></div>;
+  if (!data) return null;
 
   return (
     <section 
       id="call-to-action" 
-      className="relative py-20 bg-slate-900 overflow-hidden"
+      className="relative py-24 bg-slate-900 overflow-hidden"
     >
-      {/* Background Decoration */}
-      <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-        <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-500 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-blue-700 rounded-full blur-3xl"></div>
+      {/* Dynamic Background Glow */}
+      <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-600 rounded-full blur-[120px]"></div>
+        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-blue-500 rounded-full blur-[120px]"></div>
       </div>
 
-      <div className="container mx-auto px-4 relative z-10">
+      <div className="container mx-auto px-6 relative z-10">
         <div 
-          className="flex flex-wrap lg:flex-nowrap items-center justify-between gap-10" 
-          data-aos="zoom-in" 
-          data-aos-delay="100"
+          className="flex flex-col lg:flex-row items-center justify-between gap-12 text-center lg:text-left"
+          data-aos="fade-up" // Simpler mobile animation than zoom-in
         >
-          {/* Text Content */}
-          <div className="w-full lg:w-3/4 text-center lg:text-left">
-            <h3 className="text-3xl md:text-4xl font-bold text-white mb-6">
+          {/* Content */}
+          <div className="flex-1">
+            <h3 className="text-4xl md:text-5xl font-black text-white mb-6 tracking-tight leading-tight">
               {data.title}
             </h3>
-            <p className="text-slate-300 text-lg leading-relaxed max-w-4xl">
+            <p className="text-slate-400 text-lg md:text-xl leading-relaxed max-w-3xl mx-auto lg:mx-0">
               {data.description}
             </p>
           </div>
 
-          {/* Button Container */}
-          <div className="w-full lg:w-1/4 flex justify-center lg:justify-end">
+          {/* Action */}
+          <div className="flex-shrink-0">
             <a 
               href={data.downloadUrl}
               target="_blank"
               rel="noopener noreferrer" 
-              className="group relative inline-flex items-center justify-center px-10 py-4 font-bold text-white transition-all duration-200 bg-blue-600 font-pj rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 hover:bg-blue-500 hover:scale-105 shadow-xl shadow-blue-900/20"
-              role="button"
+              className={`
+                group relative inline-flex items-center justify-center px-12 py-5 
+                font-black text-white transition-all duration-300 
+                bg-blue-600 rounded-2xl hover:bg-blue-500 hover:scale-105 
+                shadow-2xl shadow-blue-600/30 active:scale-95
+                ${data.showAnimation ? 'animate-pulse' : ''}
+              `}
             >
-              {data.buttonText}
-              <i className={`bi bi-download ml-2 ${data.showAnimation ? 'group-hover:animate-bounce' : ''}`}></i>
+              <span className="tracking-widest uppercase text-xs">{data.buttonText}</span>
+              <i className="bi bi-arrow-right-circle-fill ml-3 text-xl group-hover:translate-x-1 transition-transform"></i>
             </a>
           </div>
-
         </div>
       </div>
     </section>
