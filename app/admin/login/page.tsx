@@ -12,15 +12,24 @@ export default function AdminLogin() {
   const [terminalId, setTerminalId] = useState("INITIALIZING...");
   const router = useRouter();
 
-  // Use NEXT_PUBLIC prefix for Next.js client-side env variables
-//   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://tenachin.org/api";
-// 1. Set the base URL without the /api suffix
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://tenachin.org";
+  /**
+   * DIRECT VARIABLE CONFIGURATION
+   * We use a relative path "/api" as the default. 
+   * This ensures the request goes to: https://tenachin.org/api/...
+   * and is caught by your .htaccess proxy.
+   */
+  const apiUrl = "https://tenachin.org/api";
 
-
-  // Handle Hydration: Set Terminal ID only after component mounts on client
   useEffect(() => {
+    // Set Terminal ID based on current hostname
     setTerminalId(window.location.hostname.toUpperCase());
+
+    // Safety: Clear any old service workers that might be caching old "localhost" responses
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.getRegistrations().then((regs) => {
+        regs.forEach((r) => r.unregister());
+      });
+    }
   }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -29,21 +38,17 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://tenachin.org";
     setError("");
 
     try {
-    //   const res = await fetch(`${apiUrl}/api/auth/login`, {
-    //     method: "POST",
-    //     headers: { "Content-Type": "application/json" },
-    //     body: JSON.stringify({ username, password }),
-    //   });
-      // 2. Ensure the fetch call handles the path correctly
-        const res = await fetch(`${apiUrl.replace(/\/$/, '')}/api/auth/login`, {
+      // Constructs the call to: /api/auth/login
+      const res = await fetch(`${apiUrl}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
-        });
+      });
 
       const result = await res.json();
 
       if (res.ok && result.success) {
+        // Store session token and redirect to admin dashboard
         localStorage.setItem("tenachin_admin_token", result.token);
         router.push("/admin");
       } else {
