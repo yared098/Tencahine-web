@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useTheme } from "../context/ThemeContext";
 
 const slides = [
   {
@@ -20,6 +21,7 @@ const slides = [
 ];
 
 const HeroSection: React.FC = () => {
+  const { theme } = useTheme();
   const [currentSlide, setCurrentSlide] = useState(0);
 
   // Auto-slide every 5 seconds
@@ -33,20 +35,32 @@ const HeroSection: React.FC = () => {
   const nextSlide = () => setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
   const prevSlide = () => setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
 
+  if (!theme) return null;
+
   return (
-    <section id="hero" className="relative min-h-screen flex items-center pt-20 overflow-hidden bg-slate-900 text-white">
+    <section 
+      id="hero" 
+      className="relative min-h-screen flex items-center pt-20 overflow-hidden text-white"
+      style={{ backgroundColor: theme.backgroundColor }}
+    >
       
-      {/* Background Glows */}
+      {/* Background Glows - Using Primary and Accent colors with low opacity */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute top-0 -left-1/4 w-1/2 h-1/2 bg-blue-600/10 rounded-full blur-[120px]"></div>
-        <div className="absolute bottom-0 -right-1/4 w-1/2 h-1/2 bg-indigo-600/10 rounded-full blur-[120px]"></div>
+        <div 
+          className="absolute top-0 -left-1/4 w-1/2 h-1/2 rounded-full blur-[120px] opacity-20"
+          style={{ backgroundColor: theme.primaryColor }}
+        ></div>
+        <div 
+          className="absolute bottom-0 -right-1/4 w-1/2 h-1/2 rounded-full blur-[120px] opacity-10"
+          style={{ backgroundColor: theme.accentColor }}
+        ></div>
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="relative w-full max-w-5xl mx-auto text-center">
           
           {/* Carousel Content */}
-          <div className="min-h-[400px] flex flex-col justify-center items-center">
+          <div className="min-h-[450px] md:min-h-[400px] flex flex-col justify-center items-center">
             {slides.map((slide, index) => (
               <div
                 key={index}
@@ -56,15 +70,23 @@ const HeroSection: React.FC = () => {
                     : "opacity-0 translate-y-10 pointer-events-none"
                 }`}
               >
-                <h2 className="text-4xl md:text-7xl font-extrabold mb-6 leading-tight">
-                  {slide.title} <span className="text-blue-500">{slide.span}</span>
+                <h2 
+                  className="text-4xl md:text-7xl mb-6 leading-tight"
+                  style={{ fontWeight: theme.headerFontWeight }}
+                >
+                  {slide.title} <span style={{ color: theme.primaryColor }}>{slide.span}</span>
                 </h2>
                 <p className="text-lg md:text-xl text-slate-300 max-w-3xl mx-auto mb-10 leading-relaxed px-4">
                   {slide.description}
                 </p>
                 <a
                   href={slide.link}
-                  className="inline-block px-10 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-bold text-lg transition-all shadow-lg shadow-blue-600/20 active:scale-95"
+                  className="hero-btn inline-block px-10 py-4 rounded-full font-bold text-lg transition-all shadow-lg active:scale-95"
+                  style={{ 
+                    backgroundColor: theme.primaryColor,
+                    color: theme.backgroundColor,
+                    boxShadow: `0 10px 30px ${theme.primaryColor}33`
+                  }}
                 >
                   {slide.btnText}
                 </a>
@@ -77,13 +99,13 @@ const HeroSection: React.FC = () => {
             onClick={prevSlide}
             className="absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-all group hidden md:flex"
           >
-            <i className="bi bi-chevron-left text-2xl group-hover:-translate-x-1 transition-transform"></i>
+            <i className="bi bi-chevron-left text-2xl group-hover:-translate-x-1 transition-transform" style={{ color: theme.primaryColor }}></i>
           </button>
           <button 
             onClick={nextSlide}
             className="absolute right-0 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-all group hidden md:flex"
           >
-            <i className="bi bi-chevron-right text-2xl group-hover:translate-x-1 transition-transform"></i>
+            <i className="bi bi-chevron-right text-2xl group-hover:translate-x-1 transition-transform" style={{ color: theme.primaryColor }}></i>
           </button>
 
           {/* Indicators */}
@@ -92,9 +114,11 @@ const HeroSection: React.FC = () => {
               <button
                 key={i}
                 onClick={() => setCurrentSlide(i)}
-                className={`h-2 rounded-full transition-all ${
-                  i === currentSlide ? "w-8 bg-blue-500" : "w-2 bg-white/20"
-                }`}
+                className="h-2 rounded-full transition-all"
+                style={{ 
+                  width: i === currentSlide ? "32px" : "8px",
+                  backgroundColor: i === currentSlide ? theme.primaryColor : "rgba(255,255,255,0.2)"
+                }}
               />
             ))}
           </div>
@@ -112,18 +136,22 @@ const HeroSection: React.FC = () => {
             <path id="wave-path" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
           </defs>
           <g className="animate-wave-slow">
-            <use href="#wave-path" x="50" y="3" className="fill-white/10" />
+            <use href="#wave-path" x="50" y="3" fill="rgba(255,255,255,0.05)" />
           </g>
           <g className="animate-wave-medium">
-            <use href="#wave-path" x="50" y="0" className="fill-white/20" />
+            <use href="#wave-path" x="50" y="0" fill="rgba(255,255,255,0.1)" />
           </g>
           <g className="animate-wave-fast">
-            <use href="#wave-path" x="50" y="9" className="fill-white" />
+            <use href="#wave-path" x="50" y="9" fill="white" />
           </g>
         </svg>
       </div>
 
       <style jsx>{`
+        .hero-btn:hover {
+          background-color: ${theme.accentColor} !important;
+          transform: translateY(-2px);
+        }
         @keyframes wave {
           0% { transform: translateX(-90px); }
           100% { transform: translateX(85px); }

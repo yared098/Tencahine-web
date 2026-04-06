@@ -3,12 +3,14 @@
 import React, { useState, useEffect } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, FreeMode } from "swiper/modules";
+import { useTheme } from ".././context/ThemeContext";
 
 // Import Swiper styles
 import "swiper/css";
 import "swiper/css/free-mode";
 
 const PartnerSection: React.FC = () => {
+  const { theme } = useTheme();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -18,6 +20,7 @@ const PartnerSection: React.FC = () => {
       try {
         const response = await fetch(`${apiUrl}/api/partners`);
         const result = await response.json();
+        // Handle both nested and direct JSON structures
         setData(result.partnerData || result);
       } catch (error) {
         console.error("Error fetching partner data:", error);
@@ -31,101 +34,173 @@ const PartnerSection: React.FC = () => {
   if (loading || !data) return null;
 
   return (
-    <section id="partner" className="relative py-24 bg-white overflow-hidden">
-      {/* Light Mesh Background */}
-      <div className="absolute inset-0 z-0 opacity-40" 
-           style={{ backgroundImage: `radial-gradient(#cbd5e1 1px, transparent 1px)`, backgroundSize: '32px 32px' }}>
-      </div>
+    <section 
+      id="partner" 
+      className="relative py-24 overflow-hidden transition-colors duration-500"
+      style={{ backgroundColor: theme.backgroundColor }}
+    >
+      {/* Mesh Background */}
+      <div 
+        className="absolute inset-0 z-0 opacity-10" 
+        style={{ 
+          backgroundImage: `radial-gradient(rgba(255,255,255,0.2) 1px, transparent 1px)`, 
+          backgroundSize: '40px 40px' 
+        }}
+      ></div>
 
       {/* --- Header Section --- */}
-      <div className="container mx-auto px-4 text-center mb-16 relative z-10" data-aos="fade-up">
-        <span className="text-blue-600 font-black uppercase tracking-[0.3em] text-xs mb-4 block">Ecosystem</span>
-        <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight mb-6">
-          {data.title}
-        </h2>
-        <p className="text-slate-500 max-w-2xl mx-auto text-lg font-medium leading-relaxed">
-          {data.subtitle}
-        </p>
-      </div>
+      {(data.title || data.subtitle) && (
+        <div className="container mx-auto px-4 text-center mb-20 relative z-10" data-aos="fade-up">
+          {data.badge && (
+            <span 
+              className="font-black uppercase tracking-[0.4em] text-[10px] mb-4 block"
+              style={{ color: theme.accentColor }}
+            >
+              {data.badge}
+            </span>
+          )}
+          
+          {data.title && (
+            <h2 
+              className="text-4xl md:text-6xl tracking-tighter mb-6 uppercase italic"
+              style={{ color: "white", fontWeight: theme.headerFontWeight }}
+            >
+              {data.title}
+            </h2>
+          )}
 
-      {/* --- Category Grid (Fixed) --- */}
-      <div className="container mx-auto px-4 mb-24 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {data.subtitle && (
+            <p className="text-slate-400 max-w-2xl mx-auto text-lg font-medium leading-relaxed">
+              {data.subtitle}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* --- Category Grid --- */}
+      <div className="container mx-auto px-4 mb-32 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {data.items?.map((partner: any, index: number) => (
-            <div key={index} data-aos="fade-up" data-aos-delay={index * 50}>
-              <div className="group h-full bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/5 hover:border-blue-200">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-6 bg-slate-50 group-hover:bg-blue-600 group-hover:text-white transition-all">
-                  <i className={`bi ${partner.icon} text-xl`} style={{ color: partner.color }}></i>
+            <div key={index} data-aos="fade-up" data-aos-delay={partner.delay || index * 50}>
+              <div 
+                className="group h-full p-8 rounded-2xl border-2 transition-all duration-500 hover:border-white/20 shadow-2xl"
+                style={{ 
+                  backgroundColor: theme.cardColor,
+                  borderColor: 'rgba(255, 255, 255, 0.1)'
+                }}
+              >
+                <div 
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center mb-8 transition-all duration-500 group-hover:scale-110 group-hover:-rotate-6 shadow-lg"
+                  style={{ 
+                    backgroundColor: `${partner.color || theme.primaryColor}15`, 
+                    color: partner.color || theme.primaryColor 
+                  }}
+                >
+                  <i className={`bi ${partner.icon} text-2xl`}></i>
                 </div>
-                <h3 className="text-lg font-bold text-slate-800 mb-2">{partner.title}</h3>
-                <p className="text-slate-500 text-sm font-medium leading-relaxed">{partner.description}</p>
+                <h3 className="text-xl font-black text-white mb-3 uppercase italic tracking-tight">
+                  {partner.title}
+                </h3>
+                <p className="text-slate-500 text-sm font-medium leading-relaxed">
+                  {partner.description}
+                </p>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* --- HORIZONTAL SLIDER: Leading Institutions --- */}
-      <div className="relative z-10 py-12 bg-slate-50/50 border-y border-slate-100">
-        <div className="container mx-auto px-4 mb-10 text-center">
-            <h3 className="text-xl md:text-2xl font-black text-slate-900 uppercase tracking-widest">
-                {data.hospitalSectionTitle || "Working with Ethiopia's Leading Institutions"}
-            </h3>
-            <div className="w-12 h-1 bg-blue-600 mx-auto mt-3 rounded-full"></div>
-        </div>
+      {/* --- HORIZONTAL SLIDER --- */}
+      {data.hospitals && data.hospitals.length > 0 && (
+        <div 
+          className="relative z-10 py-16 border-y border-white/5"
+          style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}
+        >
+          <div className="container mx-auto px-4 mb-12 text-center">
+              <h3 
+                className="text-xl md:text-2xl font-black uppercase tracking-[0.2em]"
+                style={{ color: "white" }}
+              >
+                  {data.hospitalSectionTitle || "Our Partners"}
+              </h3>
+              <div 
+                className="w-20 h-1.5 mx-auto mt-4 rounded-full"
+                style={{ backgroundColor: theme.primaryColor }}
+              ></div>
+          </div>
 
-        <div className="px-4 md:px-10">
-          <Swiper
-            modules={[Autoplay, FreeMode]}
-            spaceBetween={20}
-            slidesPerView={2}
-            loop={true}
-            freeMode={true}
-            speed={4000} // Smooth continuous scroll
-            autoplay={{
-              delay: 1,
-              disableOnInteraction: false,
-            }}
-            breakpoints={{
-              640: { slidesPerView: 3, spaceBetween: 30 },
-              1024: { slidesPerView: 4, spaceBetween: 40 },
-              1280: { slidesPerView: 5, spaceBetween: 50 },
-            }}
-            className="partner-swiper pointer-events-none md:pointer-events-auto"
-          >
-            {data.hospitals?.map((hospital: any, idx: number) => (
-              <SwiperSlide key={idx}>
-                <div className="group/hosp bg-white border border-slate-200/60 p-6 rounded-3xl flex flex-col items-center text-center justify-center gap-4 transition-all hover:shadow-lg hover:border-blue-400 min-h-[160px]">
-                  <div className="w-20 h-20 rounded-2xl bg-slate-50 group-hover/hosp:bg-white p-3 flex items-center justify-center transition-colors overflow-hidden">
-                    {hospital.image ? (
-                      <img 
-                        src={hospital.image} 
-                        alt={hospital.name} 
-                        className="w-full h-full object-contain grayscale group-hover/hosp:grayscale-0 transition-all duration-500" 
-                      />
-                    ) : (
-                      <i className="bi bi-hospital text-slate-300 group-hover/hosp:text-blue-600 text-3xl transition-colors"></i>
-                    )}
+          <div className="px-4 md:px-10">
+            <Swiper
+              modules={[Autoplay, FreeMode]}
+              spaceBetween={25}
+              slidesPerView={2}
+              loop={true}
+              freeMode={true}
+              speed={5000}
+              autoplay={{
+                delay: 1,
+                disableOnInteraction: false,
+              }}
+              breakpoints={{
+                640: { slidesPerView: 3, spaceBetween: 30 },
+                1024: { slidesPerView: 4, spaceBetween: 40 },
+                1280: { slidesPerView: 5, spaceBetween: 50 },
+              }}
+              className="partner-swiper pointer-events-none md:pointer-events-auto"
+            >
+              {data.hospitals.map((hospital: any, idx: number) => (
+                <SwiperSlide key={idx}>
+                  <div 
+                    className="group/hosp border-2 p-8 rounded-2xl flex flex-col items-center text-center justify-center gap-5 transition-all duration-500 hover:border-white/20 min-h-[180px] shadow-xl"
+                    style={{ 
+                      backgroundColor: theme.cardColor,
+                      borderColor: 'rgba(255, 255, 255, 0.05)'
+                    }}
+                  >
+                    <div className="w-24 h-24 rounded-2xl bg-white/5 group-hover/hosp:bg-white p-4 flex items-center justify-center transition-all duration-700 overflow-hidden">
+                      {hospital.image ? (
+                        <img 
+                          src={hospital.image} 
+                          alt={hospital.name} 
+                          className="w-full h-full object-contain grayscale opacity-60 group-hover/hosp:grayscale-0 group-hover/hosp:opacity-100 transition-all duration-700" 
+                        />
+                      ) : (
+                        <i 
+                          className="bi bi-hospital text-4xl opacity-30 group-hover/hosp:opacity-100 transition-all"
+                          style={{ color: theme.primaryColor }}
+                        ></i>
+                      )}
+                    </div>
+                    <span className="text-[10px] md:text-xs font-black text-slate-500 group-hover/hosp:text-white transition-colors uppercase tracking-widest leading-tight">
+                      {hospital.name}
+                    </span>
                   </div>
-                  <span className="text-[10px] md:text-xs font-black text-slate-500 group-hover/hosp:text-blue-600 transition-colors uppercase tracking-widest leading-tight">
-                    {hospital.name}
-                  </span>
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* --- Become a Partner Call to Action --- */}
-      <div className="container mx-auto px-4 mt-20 text-center relative z-10" data-aos="fade-up">
-        <div className="inline-block group">
-            <a href="#contact" className="flex items-center gap-4 bg-slate-900 text-white px-10 py-5 rounded-2xl font-bold hover:bg-blue-600 transition-all shadow-xl shadow-slate-900/10">
-                Become a Partner
-                <i className="bi bi-arrow-right group-hover:translate-x-2 transition-transform"></i>
-            </a>
+      {/* --- Dynamic Call to Action --- */}
+      {data.ctaText && (
+        <div className="container mx-auto px-4 mt-24 text-center relative z-10" data-aos="fade-up">
+          <div className="inline-block group">
+              <a 
+                href={data.ctaLink || "#contact"} 
+                className="flex items-center gap-4 px-12 py-5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all duration-300 shadow-2xl hover:scale-105 active:scale-95"
+                style={{ 
+                  backgroundColor: theme.primaryColor, 
+                  color: theme.backgroundColor,
+                  boxShadow: `0 20px 40px ${theme.primaryColor}30`
+                }}
+              >
+                  {data.ctaText}
+                  <i className="bi bi-arrow-right text-lg group-hover:translate-x-2 transition-transform"></i>
+              </a>
+          </div>
         </div>
-      </div>
+      )}
 
       <style jsx global>{`
         .partner-swiper .swiper-wrapper {

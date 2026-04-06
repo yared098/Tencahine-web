@@ -13,19 +13,19 @@ export default function AdminLogin() {
   const router = useRouter();
 
   /**
-   * DIRECT VARIABLE CONFIGURATION
-   * We use a relative path "/api" as the default. 
-   * This ensures the request goes to: https://tenachin.org/api/...
-   * and is caught by your .htaccess proxy.
+   * API CONFIGURATION
+   * Fetched from .env via NEXT_PUBLIC_LOGIN_API_URL
    */
-  const apiUrl = "https://tenachin.org/api";
+  const apiUrl = process.env.NEXT_PUBLIC_LOGIN_API_URL ;
 
   useEffect(() => {
     // Set Terminal ID based on current hostname
-    setTerminalId(window.location.hostname.toUpperCase());
+    if (typeof window !== "undefined") {
+      setTerminalId(window.location.hostname.toUpperCase());
+    }
 
-    // Safety: Clear any old service workers that might be caching old "localhost" responses
-    if ("serviceWorker" in navigator) {
+    // Safety: Clear old service workers
+    if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
       navigator.serviceWorker.getRegistrations().then((regs) => {
         regs.forEach((r) => r.unregister());
       });
@@ -38,7 +38,7 @@ export default function AdminLogin() {
     setError("");
 
     try {
-      // Constructs the call to: /api/auth/login
+      // Logic: calls https://dotenvx.com/docs/env-file/auth/login
       const res = await fetch(`${apiUrl}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -48,7 +48,6 @@ export default function AdminLogin() {
       const result = await res.json();
 
       if (res.ok && result.success) {
-        // Store session token and redirect to admin dashboard
         localStorage.setItem("tenachin_admin_token", result.token);
         router.push("/admin");
       } else {
@@ -164,15 +163,15 @@ export default function AdminLogin() {
 
         {/* FOOTER INFO */}
         <div className="mt-10 text-center space-y-4">
-           <div className="flex justify-center gap-6">
+            <div className="flex justify-center gap-6">
                 <i className="bi bi-fingerprint text-slate-800 text-2xl"></i>
                 <i className="bi bi-safe2 text-slate-800 text-2xl"></i>
                 <i className="bi bi-incognito text-slate-800 text-2xl"></i>
-           </div>
-           <p className="text-slate-600 text-[9px] font-bold uppercase tracking-[0.3em]">
-             Authorized Personnel Only <br />
-             <span className="opacity-50">Terminal ID: {terminalId}</span>
-           </p>
+            </div>
+            <p className="text-slate-600 text-[9px] font-bold uppercase tracking-[0.3em]">
+              Authorized Personnel Only <br />
+              <span className="opacity-50">Terminal ID: {terminalId}</span>
+            </p>
         </div>
       </div>
 

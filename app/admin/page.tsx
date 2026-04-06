@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation"; // Added router for protection
+import { useRouter } from "next/navigation";
 
 // 1. IMPORT ALL SUB-PAGES AS COMPONENTS
 import EditFAQ from "./edit-faq/page";
@@ -13,77 +13,84 @@ import EditRoles from "./edit-roles/page";
 import EditReviews from "./edit-reviews/page";
 import EditPartners from "./edit-partners/page";
 import EditContact from "./edit-contact/page";
+import EditConfig from "./config/page"; 
+import EditFeatures from "./edit-features/page";
+import EditHowtouse from "./howtowork/EditHowtouse"; // <--- 1. Import the new How it Works Editor
 
 export default function AdminDashboard() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
-  // --- AUTH PROTECTION STATE ---
   const [isAuthorized, setIsAuthorized] = useState(false);
 
+  // --- AUTH PROTECTION ---
   useEffect(() => {
-    // Check if the token we set in login/page.js exists
-    const token = localStorage.getItem("tenachin_admin_token");
-    
+    const token = sessionStorage.getItem("tenachin_admin_token");
     if (!token) {
-      // If no token, bounce them back to the login page
       router.push("/admin/login");
     } else {
-      // If token exists, unlock the dashboard
       setIsAuthorized(true);
     }
   }, [router]);
 
-  // Close mobile menu whenever the tab changes
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [activeTab]);
 
+  // --- 2. ADD TO SIDEBAR SECTIONS ---
   const managementSections = [
     { title: "Dashboard", icon: "bi-grid-1x2-fill", color: "bg-slate-800" },
+    { title: "Site Settings", icon: "bi-gear-wide-connected", color: "bg-teal-600" }, 
     { title: "Hero & Brand", icon: "bi-stars", color: "bg-blue-600" },
-    { title: "Our Mission", icon: "bi-info-circle-fill", color: "bg-indigo-600" },
+    { title: "Our Mission", icon: "bi-toggles", color: "bg-violet-600" },
+    { title: "About Us", icon: "bi-info-circle-fill", color: "bg-indigo-600" },
+    { title: "How it Works", icon: "bi-command", color: "bg-orange-500" }, // <--- New Sidebar Item
     { title: "Medical Services", icon: "bi-heart-pulse-fill", color: "bg-red-500" },
-    { title: "Clinical Workforce", icon: "bi-people-fill", color: "bg-slate-700" },
+    { title: "Clinical Team", icon: "bi-people-fill", color: "bg-slate-700" },
     { title: "Testimonials", icon: "bi-chat-quote-fill", color: "bg-emerald-500" },
-    { title: "Ecosystem", icon: "bi-building-fill-check", color: "bg-cyan-500" },
+    { title: "Partner With Us", icon: "bi-building-fill-check", color: "bg-cyan-500" },
     { title: "Frequently asked", icon: "bi-question-diamond-fill", color: "bg-amber-500" },
     { title: "Contact Info", icon: "bi-geo-alt-fill", color: "bg-rose-500" },
   ];
 
-  // LOGOUT HANDLER
   const handleLogout = () => {
-    localStorage.removeItem("tenachin_admin_token");
+    sessionStorage.removeItem("tenachin_admin_token");
     router.push("/admin/login");
   };
 
-  // --- GATEKEEPER: Prevent UI flicker if not logged in ---
   if (!isAuthorized) {
     return (
-      <div className="h-screen w-screen flex flex-col items-center justify-center bg-slate-900">
-        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p className="text-white font-black italic tracking-widest text-[10px] uppercase">Verifying Operator Credentials...</p>
+      <div className="h-screen w-screen flex flex-col items-center justify-center bg-slate-900 text-center px-6">
+        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-6"></div>
+        <h2 className="text-white font-black text-xl italic tracking-tighter mb-2">INITIALIZING ENCRYPTED TERMINAL</h2>
+        <p className="text-slate-500 font-bold tracking-widest text-[10px] uppercase">Verifying Operator Credentials...</p>
       </div>
     );
   }
 
+  // --- 3. RENDERING LOGIC ---
   const renderContent = () => {
     switch (activeTab) {
       case "Dashboard": 
         return <DashboardHome setActiveTab={setActiveTab} sections={managementSections} />;
+      case "Site Settings": 
+        return <EditConfig />;
       case "Hero & Brand": 
         return <EditCTA />;
       case "Our Mission": 
+        return <EditFeatures />;
+      case "About Us": 
         return <EditAbout />;
+      case "How it Works": 
+        return <EditHowtouse />; // <--- Rendering the new component
       case "Medical Services": 
         return <EditServices />;
-      case "Clinical Workforce": 
+      case "Clinical Team": 
         return <EditRoles />;
       case "Testimonials": 
         return <EditReviews />;
-      case "Ecosystem": 
+      case "Partner With Us": 
         return <EditPartners />;
       case "Frequently asked": 
         return <EditFAQ />;
@@ -97,7 +104,7 @@ export default function AdminDashboard() {
   return (
     <div className="flex min-h-screen bg-slate-50 selection:bg-blue-100 overflow-x-hidden">
       
-      {/* --- MOBILE OVERLAY --- */}
+      {/* MOBILE OVERLAY */}
       {isMobileMenuOpen && (
         <div 
           className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] lg:hidden"
@@ -105,7 +112,7 @@ export default function AdminDashboard() {
         />
       )}
 
-      {/* --- SIDEBAR --- */}
+      {/* SIDEBAR */}
       <aside className={`
         fixed inset-y-0 left-0 z-[70] lg:relative lg:flex
         ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
@@ -147,7 +154,7 @@ export default function AdminDashboard() {
         </button>
       </aside>
 
-      {/* --- MAIN VIEWPORT --- */}
+      {/* MAIN VIEWPORT */}
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
         <header className="bg-white/80 backdrop-blur-md border-b border-slate-100 sticky top-0 z-40 px-4 md:px-8 py-4 flex justify-between items-center h-20">
           <div className="flex items-center gap-4">
@@ -166,20 +173,19 @@ export default function AdminDashboard() {
           </div>
           
           <div className="flex items-center gap-2 sm:gap-4">
-             {/* LOGOUT BUTTON */}
-             <button 
-               onClick={handleLogout}
-               className="text-[8px] sm:text-[10px] font-black text-red-600 bg-red-50 hover:bg-red-600 hover:text-white px-3 py-2.5 rounded-full transition-all tracking-widest uppercase"
-             >
-               LOGOUT <i className="bi bi-power ml-1"></i>
-             </button>
+              <button 
+                onClick={handleLogout}
+                className="text-[8px] sm:text-[10px] font-black text-red-600 bg-red-50 hover:bg-red-600 hover:text-white px-3 py-2.5 rounded-full transition-all tracking-widest uppercase"
+              >
+                LOGOUT <i className="bi bi-power ml-1"></i>
+              </button>
 
-             <Link href="/" target="_blank" className="text-[8px] sm:text-[10px] font-black text-blue-600 bg-blue-50 px-3 sm:px-5 py-2.5 rounded-full hover:bg-blue-600 hover:text-white transition-all tracking-widest uppercase truncate max-w-[100px] sm:max-w-none">
-                LIVE <span className="hidden xs:inline">SITE</span> <i className="bi bi-box-arrow-up-right ml-1"></i>
-             </Link>
-             <div className="w-8 h-8 sm:w-10 h-10 rounded-full bg-slate-200 border-2 border-white shadow-sm flex items-center justify-center">
-                <i className="bi bi-person-fill text-slate-400"></i>
-             </div>
+              <Link href="/" target="_blank" className="text-[8px] sm:text-[10px] font-black text-blue-600 bg-blue-50 px-3 sm:px-5 py-2.5 rounded-full hover:bg-blue-600 hover:text-white transition-all tracking-widest uppercase">
+                LIVE SITE <i className="bi bi-box-arrow-up-right ml-1"></i>
+              </Link>
+              <div className="w-8 h-8 sm:w-10 h-10 rounded-full bg-slate-200 border-2 border-white shadow-sm flex items-center justify-center overflow-hidden">
+                 <i className="bi bi-person-fill text-slate-400"></i>
+              </div>
           </div>
         </header>
 
@@ -191,13 +197,13 @@ export default function AdminDashboard() {
   );
 }
 
-/* --- DASHBOARD HOME VIEW --- */
+// Sub-component for Dashboard Home remains the same...
 function DashboardHome({ setActiveTab, sections }: any) {
   return (
     <>
       <header className="mb-8 md:mb-12">
         <div className="inline-block px-4 py-1 bg-blue-50 text-blue-600 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest mb-4">
-          System Operational
+          Status: Operational
         </div>
         <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter mb-4 leading-[1.1] md:leading-[0.9]">
           Welcome back, <br className="md:hidden" /><span className="text-blue-600 italic underline decoration-blue-200">Admin.</span>

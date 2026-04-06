@@ -1,163 +1,189 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useTheme } from "../context/ThemeContext";
 
 const HowItWorks: React.FC = () => {
-  const steps = [
-    {
-      step: "01",
-      title: "Get Started",
-      icon: "bi-phone-vibrate",
-      color: "bg-blue-600",
-      content: (
-        <ul className="space-y-2">
-          <li className="flex items-center gap-2"><i className="bi bi-check-circle-fill text-blue-500 text-[10px]"></i> Mobile App (iOS/Android)</li>
-          <li className="flex items-center gap-2"><i className="bi bi-check-circle-fill text-blue-500 text-[10px]"></i> Call Center for voice help</li>
-          <li className="flex items-center gap-2"><i className="bi bi-check-circle-fill text-blue-500 text-[10px]"></i> SMS Gateway for low-tech</li>
-        </ul>
-      ),
-    },
-    {
-      step: "02",
-      title: "Share Your Concern",
-      icon: "bi-chat-right-heart",
-      color: "bg-indigo-600",
-      content: "Briefly describe your symptoms or upload a referral. Request a specific specialist if you have a preference.",
-    },
-    {
-      step: "03",
-      title: "Get Connected",
-      icon: "bi-person-video3",
-      color: "bg-cyan-600",
-      content: "Get matched with a certified GP or specialist within minutes via HD video, voice call, or secure text.",
-    },
-    {
-      step: "04",
-      title: "Receive Care",
-      icon: "bi-capsule",
-      color: "bg-teal-600",
-      content: (
-        <ul className="space-y-2">
-          <li className="flex items-center gap-2"><i className="bi bi-dot text-teal-500 text-xl"></i> Digital prescription</li>
-          <li className="flex items-center gap-2"><i className="bi bi-dot text-teal-500 text-xl"></i> Lab request (if needed)</li>
-          <li className="flex items-center gap-2"><i className="bi bi-dot text-teal-500 text-xl"></i> Follow-up instructions</li>
-        </ul>
-      ),
-    },
-    {
-      step: "05",
-      title: "Make Payment",
-      icon: "bi-shield-check",
-      color: "bg-emerald-600",
-      content: (
-        <ul className="space-y-2">
-          <li className="flex items-center gap-2"><i className="bi bi-wallet2 text-emerald-500"></i> Telebirr / M-Pesa</li>
-          <li className="flex items-center gap-2"><i className="bi bi-umbrella text-emerald-500"></i> Health Insurance</li>
-        </ul>
-      ),
-    },
-    {
-      step: "⏱",
-      title: "Response Guarantee",
-      icon: "bi-lightning-charge",
-      color: "bg-orange-500",
-      content: (
-        <div className="mt-2 p-3 rounded-xl bg-orange-50 border border-orange-100">
-          <div className="flex justify-between mb-1">
-            <span className="text-xs font-bold text-orange-700 uppercase">Emergencies</span>
-            <span className="text-xs font-black text-orange-700">&lt; 10m</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-xs font-bold text-slate-600 uppercase">General</span>
-            <span className="text-xs font-black text-slate-600">&lt; 30m</span>
-          </div>
-        </div>
-      ),
-    },
-  ];
+  const { theme } = useTheme();
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch(`${apiUrl}/api/howtouse`);
+        const json = await res.json();
+        setData(json);
+      } catch (err) {
+        console.error("Failed to fetch HowItWorks data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [apiUrl]);
+
+  if (loading || !data) {
+    return (
+      <div className="py-24 text-center text-white italic opacity-50 animate-pulse">
+        LOADING PROCESS...
+      </div>
+    );
+  }
 
   return (
-    <section id="how-it-works" className="py-24 bg-white relative overflow-hidden">
-      {/* Decorative Background Elements */}
-      <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[500px] h-[500px] bg-blue-50 rounded-full blur-3xl opacity-50"></div>
+    <section 
+      id="how-it-works" 
+      className="py-24 relative overflow-hidden transition-colors duration-500"
+      style={{ backgroundColor: theme.backgroundColor }}
+    >
+      {/* Background Glows */}
+      <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[600px] h-[600px] rounded-full blur-[120px] opacity-10 pointer-events-none" style={{ backgroundColor: theme.primaryColor }}></div>
 
       <div className="container mx-auto px-4 relative z-10">
-        {/* Section Header */}
-        <div className="max-w-3xl mx-auto text-center mb-20" data-aos="fade-up">
-          <span className="inline-block px-4 py-1.5 mb-4 text-xs font-bold tracking-widest text-blue-600 uppercase bg-blue-50 rounded-full">
-            The Process
-          </span>
-          <h2 className="text-3xl md:text-5xl font-extrabold text-slate-900 mb-6 tracking-tight">
-            Simple, Fast, Inclusive
-          </h2>
-          <p className="text-slate-500 text-lg leading-relaxed">
-            Tenachin is built for everyone—urban or rural. Access world-class care through our app, direct call, or SMS gateway.
-          </p>
-        </div>
+        
+        {/* 1. Section Header - Only shows if badge or title exists */}
+        {(data.header?.badge || data.header?.title) && (
+          <div className="max-w-3xl mx-auto text-center mb-20">
+            {data.header?.badge && (
+              <span 
+                className="inline-block px-5 py-1.5 mb-6 text-[10px] font-black tracking-[0.3em] uppercase rounded-full border-2"
+                style={{ color: theme.accentColor, borderColor: `${theme.accentColor}30`, backgroundColor: `${theme.accentColor}10` }}
+              >
+                {data.header.badge}
+              </span>
+            )}
+            
+            {data.header?.title && (
+              <h2 className="text-4xl md:text-5xl mb-6 tracking-tighter italic uppercase text-white" style={{ fontWeight: theme.headerFontWeight }}>
+                {data.header.title.split(', ').map((word: string, i: number, arr: string[]) => (
+                    <React.Fragment key={i}>
+                        {i === arr.length - 1 ? <span style={{ color: theme.primaryColor }}>{word}</span> : word + (i < arr.length -1 ? ", " : "")}
+                    </React.Fragment>
+                ))}
+              </h2>
+            )}
 
-        {/* Step Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 relative">
-          
-          {/* Connecting Line (Desktop Only) */}
-          <div className="hidden lg:block absolute top-[15%] left-0 w-full h-0.5 bg-slate-100 -z-10">
-             <div className="w-1/2 h-full bg-gradient-to-r from-blue-600 to-transparent"></div>
+            {data.header?.description && (
+              <p className="text-slate-400 text-lg leading-relaxed font-medium">
+                {data.header.description}
+              </p>
+            )}
           </div>
+        )}
 
-          {steps.map((item, index) => (
-            <div 
-              key={index} 
-              className="relative group h-full"
-              data-aos="fade-up"
-              data-aos-delay={index * 100}
-            >
-              {/* Giant Background Step Number */}
-              <div className="absolute -top-10 -left-4 text-[120px] font-black text-slate-100/50 group-hover:text-blue-50 group-hover:-translate-y-2 transition-all duration-500 select-none -z-10">
-                {item.step === "⏱" ? "" : item.step}
-              </div>
+        {/* 2. Step Grid */}
+        {data.steps && data.steps.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 relative mb-32">
+            <div className="hidden lg:block absolute top-[20%] left-0 w-full h-[2px] bg-white/5 -z-10"></div>
 
-              <div className="flex flex-col h-full p-8 rounded-[2rem] bg-white border border-slate-100 shadow-sm hover:shadow-xl hover:border-blue-100 transition-all duration-500">
-                
-                {/* Icon Box */}
-                <div className={`w-16 h-16 ${item.color} rounded-2xl flex items-center justify-center text-white text-3xl shadow-lg shadow-blue-200 mb-8 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500`}>
-                  <i className={`bi ${item.icon}`}></i>
-                </div>
+            {data.steps.map((item: any, index: number) => {
+              const stepColor = 
+                  index === 1 ? theme.secondaryColor : 
+                  (index === 2 || index === 4) ? theme.accentColor : 
+                  index === 5 ? "#f97316" : theme.primaryColor;
 
-                {/* Text Content */}
-                <div className="flex-grow">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className={`w-2 h-2 rounded-full ${item.color} animate-pulse`}></span>
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Step {item.step === "⏱" ? "Limit" : item.step}</span>
+              return (
+                <div key={index} className="relative group h-full">
+                  {/* Step Number Background */}
+                  {item.step && item.step !== "⏱" && (
+                    <div className="absolute -top-12 -left-6 text-[120px] font-black opacity-5 group-hover:opacity-10 group-hover:-translate-y-4 transition-all duration-700 select-none -z-10 italic" style={{ color: stepColor }}>
+                      {item.step}
+                    </div>
+                  )}
+
+                  <div className="flex flex-col h-full p-10 rounded-2xl border-2 transition-all duration-500 hover:border-white/20 group-hover:-translate-y-2 shadow-2xl" style={{ backgroundColor: theme.cardColor, borderColor: 'rgba(255, 255, 255, 0.08)' }}>
+                    
+                    {/* Icon - Hidden if not found */}
+                    {item.icon && (
+                      <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-white text-3xl mb-10 transition-all duration-500 group-hover:scale-110" style={{ backgroundColor: stepColor, boxShadow: `0 15px 30px ${stepColor}40` }}>
+                        <i className={`bi ${item.icon}`}></i>
+                      </div>
+                    )}
+
+                    <div className="flex-grow">
+                      {item.step && (
+                        <div className="flex items-center gap-3 mb-4">
+                          <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: stepColor }}></span>
+                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Step {item.step === "⏱" ? "Limit" : item.step}</span>
+                        </div>
+                      )}
+                      
+                      {item.title && (
+                        <h3 className="text-2xl mb-4 uppercase italic font-bold text-white leading-tight">
+                          {item.title}
+                        </h3>
+                      )}
+                      
+                      <div className="text-slate-400 text-sm leading-relaxed font-medium">
+                        {/* Text/Description Logic */}
+                        {(item.type === "text" || item.description || item.content) && (
+                          <p>{item.description || item.content}</p>
+                        )}
+                        
+                        {/* List Items Logic - Hidden if items array is empty */}
+                        {item.type === "list" && item.items && item.items.length > 0 && (
+                          <ul className="space-y-3">
+                            {item.items.map((li: string, idx: number) => (
+                              <li key={idx} className="flex items-start gap-2">
+                                <i className="bi bi-check-circle-fill text-[10px] mt-1" style={{ color: stepColor }}></i>
+                                <span>{li}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+
+                        {/* Guarantee Logic - Hidden if no values */}
+                        {item.type === "guarantee" && (item.emergency || item.general) && (
+                          <div className="mt-2 p-4 rounded-xl border border-white/5" style={{ backgroundColor: `rgba(0,0,0,0.2)` }}>
+                            {item.emergency && (
+                              <div className="flex justify-between mb-2">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-orange-400">Emergencies</span>
+                                <span className="text-xs font-black text-white">{item.emergency}</span>
+                              </div>
+                            )}
+                            {item.general && (
+                              <div className="flex justify-between">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">General</span>
+                                <span className="text-xs font-black text-white">{item.general}</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="mt-10 w-12 h-1 rounded-full opacity-20 group-hover:w-full group-hover:opacity-100 transition-all duration-700" style={{ backgroundColor: stepColor }}></div>
                   </div>
-                  
-                  <h3 className="text-2xl font-extrabold text-slate-900 mb-4 group-hover:text-blue-600 transition-colors">
-                    {item.title}
-                  </h3>
-                  
-                  <div className="text-slate-500 text-sm leading-relaxed font-medium">
-                    {item.content}
-                  </div>
                 </div>
+              );
+            })}
+          </div>
+        )}
 
-                {/* Bottom Decorative Bar */}
-                <div className={`mt-8 w-12 h-1 ${item.color} rounded-full opacity-30 group-hover:w-full group-hover:opacity-100 transition-all duration-700`}></div>
-              </div>
-
-              {/* Connecting Arrow for Desktop */}
-              {index < steps.length - 1 && (index + 1) % 3 !== 0 && (
-                <div className="hidden lg:flex absolute -right-8 top-1/4 items-center justify-center text-slate-200">
-                   <i className="bi bi-arrow-right text-2xl animate-pulse"></i>
-                </div>
-              )}
+        {/* 3. Video Player - Completely hidden if videoUrl is missing */}
+        {data.videoUrl && data.videoUrl.trim() !== "" && (
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-10">
+                <h3 className="text-white uppercase italic font-bold tracking-widest text-sm opacity-50">Visual Guide</h3>
             </div>
-          ))}
-        </div>
-      </div>
-      
-      {/* Bottom Wave Texture */}
-      <div className="absolute bottom-0 left-0 w-full opacity-5 pointer-events-none">
-        <svg viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg">
-          <path fill="#000" fillOpacity="1" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,224C672,245,768,267,864,250.7C960,235,1056,181,1152,165.3C1248,149,1344,171,1392,181.3L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-        </svg>
+            
+            <div className="relative p-2 rounded-[2.5rem] bg-gradient-to-b from-white/10 to-transparent shadow-2xl">
+                <div className="relative aspect-video rounded-[2rem] overflow-hidden bg-black group">
+                    <iframe 
+                        src={data.videoUrl}
+                        title="How Tenachin Works"
+                        className="absolute inset-0 w-full h-full z-10"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                    ></iframe>
+                </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </section>
   );

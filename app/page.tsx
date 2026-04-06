@@ -20,225 +20,249 @@ import Contacts from "./page/contacts";
 export default function Home() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
+  const [activeSection, setActiveSection] = useState("hero");
   
-  // ADD THIS: This unique key will force a fresh render of the content
-  const [refreshKey, setRefreshKey] = useState(0);
+  // Dynamic Data States
+  const [contactData, setContactData] = useState<any>(null);
+  const [config, setConfig] = useState<any>(null);
+  const [showLegalModal, setShowLegalModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch both Config and Contact Data
+  useEffect(() => {
+    const fetchData = async () => {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      try {
+        const [configRes, contactRes] = await Promise.all([
+          fetch(`${apiUrl}/api/config`),
+          fetch(`${apiUrl}/api/contact`)
+        ]);
+
+        const configJson = await configRes.json();
+        const contactJson = await contactRes.json();
+
+        setConfig(configJson);
+        setContactData(contactJson.contactData || contactJson);
+      } catch (error) {
+        console.error("Error fetching site data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   useEffect(() => {
-    // Increment the key on mount to ensure mobile gets a fresh look
-    setRefreshKey(Date.now());
-
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
+      const sectionIds = ["hero", "about", "services", "how-it-works", "clinical-team", "faq"];
+      let currentSection = "hero";
+
+      for (const id of sectionIds) {
+        const element = document.getElementById(id);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          if (rect.top <= 150) currentSection = id;
+        }
+      }
+      setActiveSection(currentSection);
     };
+
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
-  const navLinks = [
-    { name: "Home", href: "#hero" },
-    { name: "About", href: "#about" },
-    { name: "Services", href: "#services" },
-    { name: "How it Works", href: "#how-it-works" },
-    { name: "Team", href: "#clinical-team" },
-    { name: "FAQ", href: "#faq" },
-  ];
+  // Helper to get theme values with fallbacks
+  const theme = config?.theme || {
+    primaryColor: "#1FB5A8",
+    backgroundColor: "#0B1C2C",
+    accentColor: "#2ED1B2",
+    headerFontWeight: "900"
+  };
+
+  const siteTitle = config?.siteSettings?.title || "Tenachin";
+
+  if (loading) return <div className="min-h-screen bg-[#0B1C2C] flex items-center justify-center text-white italic font-black animate-pulse">LOADING...</div>;
 
   return (
-    <div className="index-page bg-white text-slate-900 selection:bg-[#04ceba]/20 selection:text-[#04ceba]">
-
+    <div 
+      className="index-page min-h-screen selection:bg-opacity-30 scroll-smooth"
+      style={{ 
+        backgroundColor: theme.backgroundColor, 
+        color: "#FFFFFF",
+        // @ts-ignore
+        "--selection-bg": theme.primaryColor 
+      }}
+    >
       {/* --- HEADER --- */}
       <header
-        className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ${isScrolled
-          ? "bg-white/95 backdrop-blur-md shadow-sm h-16"
-          : "bg-transparent h-24"
-          }`}
+        className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ${
+          isScrolled ? "backdrop-blur-xl shadow-2xl h-20" : "bg-transparent h-24"
+        }`}
+        style={{ 
+          backgroundColor: isScrolled ? `${theme.backgroundColor}CC` : "transparent",
+          borderBottom: isScrolled ? `1px solid ${theme.primaryColor}33` : "none" 
+        }}
       >
-        <div className="container mx-auto px-4 h-full flex items-center justify-between">
+        <div className="container mx-auto px-6 h-full flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group">
-            {/* LOGO INTEGRATION */}
-            <div className="relative w-10 h-10 rounded-full overflow-hidden border border-slate-100 shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <Image
-                src="/logo.jpeg" // Points to public/logo.jpeg
-                alt="Tenachin Logo"
-                fill
-                // object-cover is required to fill the circle completely
-                className="object-cover"
-                priority
-              />
+            <div className="relative w-12 h-12 rounded-2xl overflow-hidden border border-white/10 shadow-lg transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
+              <Image src="/logo.jpeg" alt="Logo" fill className="object-cover" priority />
             </div>
-            <h1 className={`text-2xl font-black tracking-tighter transition-colors duration-300 ${isScrolled ? "text-slate-900" : "text-white"
-              }`}>
-              Tenachin
+            <h1 
+                className="text-2xl tracking-tighter uppercase italic bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent"
+                style={{ fontWeight: theme.headerFontWeight }}
+            >
+              {siteTitle}
             </h1>
           </Link>
 
-          {/* DESKTOP NAV */}
-          <nav className="hidden lg:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                href={link.href}
-                className={`text-[11px] font-black uppercase tracking-[0.2em] transition-colors hover:text-[#04ceba] ${isScrolled ? "text-slate-600" : "text-slate-100"
-                  }`}
-              >
-                {link.name}
-              </Link>
-            ))}
+          <nav className="hidden lg:flex items-center gap-10">
+            {["Home", "About", "Services", "How it Works", "Team", "FAQ"].map((name) => {
+              const href = name.toLowerCase().replace(/ /g, "-").replace("home", "hero").replace("team", "clinical-team");
+              const isActive = activeSection === href;
+              return (
+                <Link
+                  key={name}
+                  href={`#${href}`}
+                  className="relative text-[11px] font-bold uppercase tracking-[0.2em] transition-all py-2"
+                  style={{ color: isActive ? theme.accentColor : "#cbd5e1" }}
+                >
+                  {name}
+                  <span 
+                    className={`absolute bottom-0 left-0 h-[2px] transition-all duration-300`}
+                    style={{ 
+                        backgroundColor: theme.primaryColor,
+                        width: isActive ? "100%" : "0",
+                        opacity: isActive ? 1 : 0,
+                        boxShadow: `0 0 8px ${theme.primaryColor}`
+                    }}
+                  />
+                </Link>
+              );
+            })}
+            
             <Link
               href="#contact"
-              className="px-7 py-3 bg-[#04ceba] text-white rounded-full text-[11px] font-black uppercase tracking-[0.2em] hover:brightness-110 hover:shadow-xl hover:shadow-[#04ceba]/20 transition-all active:scale-95"
+              className="ml-4 px-8 py-3 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 shadow-lg"
+              style={{ 
+                backgroundColor: theme.primaryColor, 
+                color: theme.backgroundColor,
+                boxShadow: `0 10px 20px ${theme.primaryColor}33`
+              }}
             >
               Book Now
             </Link>
           </nav>
 
-          {/* MOBILE TOGGLE */}
           <button
-            className="lg:hidden text-3xl p-2 transition-colors"
+            className="lg:hidden text-3xl p-2 transition-transform active:scale-90"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            style={{ color: theme.primaryColor }}
           >
-            <i className={`bi ${mobileMenuOpen ? 'bi-x' : 'bi-list'} ${isScrolled ? 'text-slate-900' : 'text-white'}`}></i>
+            <i className={`bi ${mobileMenuOpen ? 'bi-x' : 'bi-distribute-vertical'}`}></i>
           </button>
-        </div>
-
-        {/* MOBILE MENU */}
-        <div className={`fixed inset-0 bg-slate-950/98 z-[110] flex flex-col items-center justify-center gap-8 transition-all duration-500 lg:hidden ${mobileMenuOpen ? "opacity-100 visible" : "opacity-0 invisible translate-x-full"
-          }`}>
-          <button className="absolute top-6 right-6 text-white text-5xl" onClick={() => setMobileMenuOpen(false)}>
-            <i className="bi bi-x"></i>
-          </button>
-          {navLinks.map((link) => (
-            <Link
-              key={link.name}
-              href={link.href}
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-3xl font-black text-white hover:text-[#04ceba] transition-colors uppercase tracking-tighter italic"
-            >
-              {link.name}
-            </Link>
-          ))}
-          <Link
-            href="#contact"
-            onClick={() => setMobileMenuOpen(false)}
-            className="mt-4 px-12 py-5 bg-[#04ceba] text-white rounded-full text-lg font-black uppercase tracking-widest shadow-2xl"
-          >
-            Contact Us
-          </Link>
         </div>
       </header>
 
       {/* --- MAIN CONTENT --- */}
       <main className="main">
         <section id="hero"><HeroSection /></section>
-
-        <div id="partner" className="py-12 bg-white border-b border-slate-50">
+        <div id="partner" className="py-12 bg-black/40 border-y border-white/5 backdrop-blur-sm">
           <PartnerSection />
         </div>
-
-        <section id="about" className="scroll-mt-24">
-          <About />
-        </section>
-
-        <section className="bg-slate-50">
+        <section id="about" className="scroll-mt-24"><About /></section>
+        <section className="py-20 border-y border-white/5" style={{ backgroundColor: "rgba(255,255,255,0.02)" }}>
           <Features />
         </section>
-
-        <section id="services" className="scroll-mt-24">
-          <Services />
-        </section>
-
-        <section id="how-it-works" className="scroll-mt-24 py-16 lg:py-28 bg-white">
-          <HowItWorks />
-        </section>
-
+        <section id="services" className="scroll-mt-24"><Services /></section>
+        <section id="how-it-works" className="scroll-mt-24 py-16 lg:py-28"><HowItWorks /></section>
         <CallToAction />
-
-        <section id="clinical-team" className="scroll-mt-24 bg-slate-50/50">
+        <section id="clinical-team" className="scroll-mt-24 bg-black/40 py-20">
           <ClinicalTeam />
         </section>
-
         <Testimonials />
-
-        <section id="faq" className="scroll-mt-24 bg-white border-y border-slate-100">
-          <Faq />
-        </section>
-
-        <section id="contact" className="scroll-mt-24">
+        <section id="faq" className="scroll-mt-24 border-y border-white/5"><Faq /></section>
+        <section id="contact" className="scroll-mt-32 pb-20">
           <Contacts />
         </section>
       </main>
 
       {/* --- FOOTER --- */}
-      <footer className="py-20 bg-slate-950 text-white border-t border-white/5">
-        <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-16 mb-16">
-          <div className="flex flex-col items-center md:items-start">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="relative w-8 h-8 rounded-full overflow-hidden border border-white/10 shadow-sm transition-all group-hover:scale-110">
-                <Image
-                  src="/logo.jpeg"
-                  alt="Tenachin"
-                  fill
-                  className="object-cover" // Ensures the image fills the circle without gaps
-                />
-              </div>
-              <h3 className="text-2xl font-black italic tracking-tighter text-[#04ceba]">Tenachin</h3>
-            </div>
-            <p className="text-slate-400 text-sm leading-relaxed text-center md:text-left font-medium max-w-sm">
-              Revolutionizing healthcare in Ethiopia through expert-led digital innovation.
-              Bridging the gap to quality care, anytime, anywhere.
-            </p>
-          </div>
+      <footer className="py-16 border-t border-white/5 bg-black/60 backdrop-blur-md">
+        <div className="container mx-auto px-6">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+                <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500">
+                    © 2026 {siteTitle.toUpperCase()}. ALL RIGHTS RESERVED.
+                </div>
+                
+                <div className="flex gap-10">
+                    <button onClick={() => setShowLegalModal(true)} className="text-[10px] font-bold uppercase tracking-widest hover:opacity-70 transition-colors" style={{ color: theme.accentColor }}>Privacy</button>
+                    <button onClick={() => setShowLegalModal(true)} className="text-[10px] font-bold uppercase tracking-widest hover:opacity-70 transition-colors" style={{ color: theme.accentColor }}>Terms</button>
+                </div>
 
-          <div className="flex flex-col items-center">
-            <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-6">Explore</h4>
-            <div className="flex flex-col gap-4 text-sm font-bold items-center">
-              <Link href="#about" className="hover:text-[#04ceba] transition-colors">Mission</Link>
-              <Link href="#services" className="hover:text-[#04ceba] transition-colors">Services</Link>
-              <Link href="#clinical-team" className="hover:text-[#04ceba] transition-colors">Our Team</Link>
+                <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/10">
+                    <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: theme.primaryColor }}></span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest">Addis Ababa, Ethiopia</span>
+                </div>
             </div>
-          </div>
-
-          <div className="flex flex-col items-center md:items-end">
-            <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-6">Stay Connected</h4>
-            <div className="flex gap-4">
-              {[
-                { icon: "facebook", url: "#" },
-                { icon: "linkedin", url: "#" },
-                { icon: "telegram", url: "https://t.me/tenachin" }
-              ].map((social) => (
-                <a
-                  key={social.icon}
-                  href={social.url}
-                  className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center hover:bg-[#04ceba] hover:text-white transition-all duration-300 border border-white/10"
-                >
-                  <i className={`bi bi-${social.icon} text-lg`}></i>
-                </a>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="container mx-auto px-4 pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em]">
-            © {new Date().getFullYear()} Tenachin Telehealth Center.
-          </p>
-          <div className="flex gap-6 text-[10px] text-slate-600 font-black uppercase tracking-[0.2em]">
-            <span className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-[#04ceba] rounded-full"></span>
-              Addis Ababa, Ethiopia
-            </span>
-          </div>
         </div>
       </footer>
+
+      {/* --- LEGAL MODAL --- */}
+      {showLegalModal && contactData && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-in fade-in duration-300">
+          <div 
+            className="w-full max-w-2xl max-h-[80vh] rounded-3xl border border-white/10 overflow-hidden flex flex-col shadow-2xl"
+            style={{ backgroundColor: theme.backgroundColor }}
+          >
+            <div className="p-8 border-b border-white/10 flex justify-between items-center">
+              <div>
+                <h3 className="text-2xl font-black uppercase italic text-white leading-none mb-1">Legal Protocols</h3>
+                <p className="text-[9px] font-black uppercase tracking-widest" style={{ color: theme.primaryColor }}>Platform Security & Compliance</p>
+              </div>
+              <button onClick={() => setShowLegalModal(false)} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white"><i className="bi bi-x-lg"></i></button>
+            </div>
+
+            <div className="p-8 overflow-y-auto space-y-6 custom-scrollbar">
+              {contactData.terms?.map((term: any) => (
+                <div key={term.id} className={`p-5 rounded-2xl border ${term.isEmergency ? 'bg-red-500/5 border-red-500/20' : 'bg-white/5 border-white/5'}`}>
+                  <div className="flex items-center gap-3 mb-2">
+                    <span 
+                      className={`text-[10px] font-black px-2 py-1 rounded`}
+                      style={{ 
+                        backgroundColor: term.isEmergency ? '#ef4444' : theme.primaryColor,
+                        color: term.isEmergency ? '#fff' : theme.backgroundColor
+                      }}
+                    >
+                      {term.id}
+                    </span>
+                    <h4 className={`text-sm font-black uppercase tracking-tight ${term.isEmergency ? 'text-red-400' : 'text-white'}`}>
+                      {term.title}
+                    </h4>
+                  </div>
+                  <p className="text-slate-400 text-xs leading-relaxed font-medium">{term.content}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="p-6 border-t border-white/10 text-center" style={{ backgroundColor: "rgba(0,0,0,0.2)" }}>
+              <button 
+                onClick={() => setShowLegalModal(false)} 
+                className="px-12 py-3 rounded-full font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-transform"
+                style={{ backgroundColor: theme.primaryColor, color: theme.backgroundColor }}
+              >
+                Close Agreement
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style jsx>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: ${theme.primaryColor}; border-radius: 10px; }
+      `}</style>
     </div>
   );
 }

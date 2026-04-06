@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css"; // Keep this one as an import!
+import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,6 +15,12 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Tenachin - Telehealth",
   description: "Africa’s first multilingual, full-spectrum telehealth platform.",
+  // --- ADDED THIS SECTION ---
+  icons: {
+    icon: "/logo1.png",         // Standard favicon
+    shortcut: "/logo1.png",     // For bookmarks
+    apple: "/logo1.png",        // For iOS home screen icons
+  },
 };
 
 export default function RootLayout({
@@ -25,10 +31,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <head>
+        {/* Manual link tag fallback for older browsers */}
+        <link rel="icon" href="/logo1.png" />
+        
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"></link>
-        {/* When using the 'public' folder, paths start with '/' 
-          and DO NOT include the word 'public'.
-        */}
+        
+        {/* Vendor CSS Files */}
         <link rel="stylesheet" href="/assets/vendor/bootstrap/css/bootstrap.min.css" />
         <link rel="stylesheet" href="/assets/vendor/bootstrap-icons/bootstrap-icons.css" />
         <link rel="stylesheet" href="/assets/vendor/aos/aos.css" />

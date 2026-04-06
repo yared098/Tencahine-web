@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useTheme } from "../context/ThemeContext";
 
 interface ServiceItem {
   id: string | number;
@@ -10,23 +11,32 @@ interface ServiceItem {
   desc: string;
 }
 
+interface ServicesData {
+  badge?: string;
+  title?: string;
+  services_list: ServiceItem[];
+}
+
 const Services: React.FC = () => {
-  const [serviceList, setServiceList] = useState<ServiceItem[]>([]);
+  const { theme } = useTheme();
+  const [data, setData] = useState<ServicesData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        // Pointing to your Generic Route: /api/:file
-        const response = await fetch("http://localhost:5000/api/services_data");
-        const data = await response.json();
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const response = await fetch(`${apiUrl}/api/services_data`);
+        const json = await response.json();
         
-        // Your controller finds the first key that is an array
-        // We find it here too to set our state
-        const key = Object.keys(data).find(k => Array.isArray(data[k]));
-        if (key) {
-          setServiceList(data[key]);
-        }
+        // Target the 'services_data' key specifically from your JSON
+        const servicesList = json.services_data || [];
+        
+        setData({
+          badge: json.badge || null, // No default if you want it strictly from DB
+          title: json.title || null,
+          services_list: servicesList
+        });
       } catch (error) {
         console.error("Failed to fetch services:", error);
       } finally {
@@ -37,77 +47,126 @@ const Services: React.FC = () => {
     fetchServices();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="py-24 bg-slate-50 text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-        <p className="mt-4 text-slate-500 font-medium">Loading Health Services...</p>
-      </div>
-    );
-  }
+  // GLOBAL GUARD: If not loading and list is empty, don't show the section at all
+  if (!loading && (!data || data.services_list.length === 0)) return null;
 
   return (
-    <section id="services" className="py-24 bg-slate-50 overflow-hidden">
-      <div className="container mx-auto px-4">
+    <section 
+      id="services" 
+      className="py-24 md:py-32 relative overflow-hidden transition-colors duration-500 min-h-[600px] flex flex-col justify-center"
+      style={{ backgroundColor: theme.backgroundColor }}
+    >
+      {/* Background Decorative Element */}
+      <div 
+        className="absolute top-0 left-1/4 w-[500px] h-[500px] rounded-full blur-[120px] opacity-5 pointer-events-none"
+        style={{ backgroundColor: theme.primaryColor }}
+      ></div>
+
+      <div className="container mx-auto px-4 relative z-10">
         
-        {/* Section Header */}
-        <div className="max-w-2xl mx-auto text-center mb-20">
-          <h2 className="text-sm font-bold text-blue-600 uppercase tracking-[0.2em] mb-3">
-            What We Offer
-          </h2>
-          <h3 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-6">
-            Comprehensive Digital Health Ecosystem
-          </h3>
-          <div className="w-20 h-1.5 bg-blue-600 mx-auto rounded-full"></div>
-        </div>
-
-        {/* Responsive Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-          {serviceList.map((service, index) => (
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20">
             <div 
-              key={service.id || index}
-              className="group relative bg-white p-8 rounded-2xl shadow-sm border border-slate-100 transition-all duration-500 hover:shadow-xl hover:-translate-y-2 overflow-hidden flex flex-col h-full"
-            >
-              {/* Animated Color Accent */}
-              <div 
-                className="absolute top-0 left-0 w-full h-1 transition-transform duration-500 transform -translate-x-full group-hover:translate-x-0"
-                style={{ backgroundColor: service.color }}
-              ></div>
+              className="animate-spin h-12 w-12 border-t-2 border-primary rounded-full"
+              style={{ borderTopColor: theme.primaryColor, borderRightColor: 'transparent' }}
+            ></div>
+            <p className="mt-6 text-slate-500 font-black uppercase tracking-[0.3em] text-[10px]">
+              Loading Services...
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* Section Header - Only renders if title exists */}
+            {(data?.title || data?.badge) && (
+              <div className="max-w-3xl mx-auto text-center mb-24">
+                {data?.badge && (
+                  <span 
+                    className="inline-block px-4 py-1.5 rounded-sm text-[10px] font-black uppercase tracking-[0.4em] mb-6 border border-white/10"
+                    style={{ color: theme.accentColor, backgroundColor: 'rgba(255,255,255,0.02)' }}
+                  >
+                    {data.badge}
+                  </span>
+                )}
 
-              {/* Icon Container */}
-              <div 
-                className="relative w-14 h-14 rounded-xl flex items-center justify-center mb-6 transition-all duration-500 group-hover:rotate-[360deg]"
-                style={{ backgroundColor: `${service.color}10` }} 
-              >
-                <i className={`bi ${service.icon} text-2xl relative z-10`} style={{ color: service.color }}></i>
+                {data?.title && (
+                  <h2 className="text-5xl md:text-7xl mb-8 tracking-tighter uppercase italic font-black text-white">
+                    {data.title.split(' ').map((word, i, arr) => (
+                      <React.Fragment key={i}>
+                        {i === arr.length - 1 ? (
+                          <span style={{ color: theme.primaryColor }}>{word}</span>
+                        ) : (
+                          word + " "
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </h2>
+                )}
+
                 <div 
-                  className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-20 transition-opacity duration-500 animate-ping"
-                  style={{ backgroundColor: service.color }}
+                  className="w-20 h-1 mx-auto"
+                  style={{ backgroundColor: theme.primaryColor }}
                 ></div>
               </div>
+            )}
 
-              {/* Text Content */}
-              <h4 className="text-lg font-bold text-slate-800 mb-3 group-hover:text-blue-600 transition-colors duration-300">
-                {service.title}
-              </h4>
-              <p className="text-slate-500 leading-relaxed text-sm flex-grow">
-                {service.desc}
-              </p>
+            {/* Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {data?.services_list.map((service, index) => (
+                // Only render the card if it has a title value
+                service.title && (
+                  <div 
+                    key={service.id || index}
+                    className="group relative p-8 rounded-sm border border-white/5 transition-all duration-700 hover:border-white/20 flex flex-col h-full overflow-hidden"
+                    style={{ backgroundColor: theme.cardColor }}
+                  >
+                    {/* Hover Glow */}
+                    <div 
+                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+                      style={{ 
+                        background: `radial-gradient(circle at top right, ${service.color || theme.primaryColor}15, transparent 70%)` 
+                      }}
+                    ></div>
 
-              {/* Learn More link */}
-              <div className="mt-6 flex items-center gap-2 text-blue-600 font-bold text-xs uppercase tracking-wider opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                <span>Explore Detail</span>
-                <i className="bi bi-arrow-right"></i>
-              </div>
+                    {/* Top Strip */}
+                    <div 
+                      className="absolute top-0 left-0 w-0 h-1 transition-all duration-500 group-hover:w-full"
+                      style={{ backgroundColor: service.color || theme.primaryColor }}
+                    ></div>
 
-              {/* Background Glow */}
-              <div 
-                className="absolute -bottom-12 -right-12 w-24 h-24 rounded-full opacity-[0.03] group-hover:scale-[3] transition-transform duration-700 pointer-events-none"
-                style={{ backgroundColor: service.color }}
-              ></div>
+                    {/* Icon - Only show if value exists */}
+                    {service.icon && (
+                      <div className="w-14 h-14 rounded-sm flex items-center justify-center mb-8 border border-white/5 bg-white/[0.02] transition-transform duration-500 group-hover:-rotate-12 group-hover:scale-110">
+                        <i 
+                          className={`bi ${service.icon} text-2xl`} 
+                          style={{ color: service.color || theme.primaryColor }}
+                        ></i>
+                      </div>
+                    )}
+
+                    <h4 className="text-lg font-black text-white mb-4 uppercase italic tracking-tight">
+                      {service.title}
+                    </h4>
+                    
+                    {/* Desc - Only show if value exists */}
+                    {service.desc && (
+                      <p className="text-slate-400 leading-relaxed text-sm font-medium flex-grow mb-10 group-hover:text-slate-300 transition-colors">
+                        {service.desc}
+                      </p>
+                    )}
+
+                    <div 
+                      className="flex items-center gap-2 font-black text-[9px] uppercase tracking-[0.2em] mt-auto transition-all duration-500 group-hover:gap-4"
+                      style={{ color: service.color || theme.primaryColor }}
+                    >
+                      <span className="opacity-60 group-hover:opacity-100">Details</span>
+                      <i className="bi bi-arrow-right text-lg"></i>
+                    </div>
+                  </div>
+                )
+              ))}
             </div>
-          ))}
-        </div>
+          </>
+        )}
       </div>
     </section>
   );
