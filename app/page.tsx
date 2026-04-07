@@ -107,7 +107,7 @@ export default function Home() {
         <div className="container mx-auto px-6 h-full flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group">
             <div className="relative w-12 h-12 rounded-2xl overflow-hidden border border-white/10 shadow-lg transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
-              <Image src="/logo.jpeg" alt="Logo" fill className="object-cover" priority />
+              <Image src="/favicon.ico" alt="Logo" fill className="object-cover" priority />
             </div>
             <h1 
                 className="text-2xl tracking-tighter uppercase italic bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent"
