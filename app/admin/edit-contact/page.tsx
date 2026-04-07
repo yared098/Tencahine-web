@@ -96,7 +96,6 @@ export default function EditContact() {
           <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 mb-6">Visuals & Branding</h2>
           
           <div className="flex flex-col lg:flex-row gap-8 items-start">
-            {/* Image Preview Card */}
             <div className="w-full lg:w-1/3">
               <div className="relative group aspect-square overflow-hidden rounded-[2rem] border-4 border-white shadow-xl bg-slate-200">
                 {data.image ? (
@@ -111,7 +110,6 @@ export default function EditContact() {
               </div>
             </div>
 
-            {/* Image Link Input */}
             <div className="w-full lg:w-2/3 space-y-6">
               <div>
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2 mb-2 block">Cover Image Link</label>
@@ -212,7 +210,60 @@ export default function EditContact() {
           </div>
         </section>
 
-        {/* 4. CTA Card */}
+        {/* NEW: 4. Map & Location Section */}
+        <section className="bg-slate-50 p-8 rounded-[2.5rem] border border-slate-200">
+          <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 mb-6">Map & Physical Location</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2 mb-2 block">Address Name (Display)</label>
+                <input
+                  type="text"
+                  value={data.location.addressName}
+                  onChange={(e) => handleChange("location.addressName", e.target.value)}
+                  className="w-full p-4 rounded-2xl ring-1 ring-slate-200 font-bold text-slate-800 outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2 mb-2 block">Google Maps Link</label>
+                <input
+                  type="text"
+                  value={data.location.googleMapsUrl}
+                  placeholder="https://goo.gl/maps/..."
+                  onChange={(e) => handleChange("location.googleMapsUrl", e.target.value)}
+                  className="w-full p-4 rounded-2xl ring-1 ring-slate-200 font-mono text-xs text-blue-600 outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+               <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2 mb-2 block">Latitude</label>
+                <input
+                  type="number"
+                  step="any"
+                  value={data.location.lat}
+                  onChange={(e) => handleChange("location.lat", parseFloat(e.target.value))}
+                  className="w-full p-4 rounded-2xl ring-1 ring-slate-200 font-mono text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2 mb-2 block">Longitude</label>
+                <input
+                  type="number"
+                  step="any"
+                  value={data.location.lng}
+                  onChange={(e) => handleChange("location.lng", parseFloat(e.target.value))}
+                  className="w-full p-4 rounded-2xl ring-1 ring-slate-200 font-mono text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                />
+              </div>
+              <div className="col-span-2">
+                <p className="text-[9px] text-slate-400 italic px-2">* Coordinates are used for the interactive map pointer.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 5. CTA Card */}
         <section className="bg-slate-900 p-10 rounded-[3rem] shadow-2xl relative overflow-hidden">
           <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400 mb-8">Call-to-Action</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
@@ -228,7 +279,7 @@ export default function EditContact() {
           <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-blue-600/20 rounded-full blur-3xl"></div>
         </section>
 
-        {/* 5. Legal & Policy */}
+        {/* 6. Legal & Policy */}
         <section>
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600">Legal Documents</h2>
