@@ -17,9 +17,9 @@ export const metadata: Metadata = {
   description: "Africa’s first multilingual, full-spectrum telehealth platform.",
   // --- ADDED THIS SECTION ---
   icons: {
-    icon: "/logo1.png",         // Standard favicon
-    shortcut: "/logo1.png",     // For bookmarks
-    apple: "/logo1.png",        // For iOS home screen icons
+    icon: "/favicon.ico",         // Standard favicon c:\Users\hp\Downloads\favicon.ico.ico
+    shortcut: "/favicon.ico",     // For bookmarks
+    apple: "/favicon.ico",        // For iOS home screen icons
   },
 };
 
@@ -32,7 +32,7 @@ export default function RootLayout({
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <head>
         {/* Manual link tag fallback for older browsers */}
-        <link rel="icon" href="/logo1.png" />
+        <link rel="icon" href="/favicon.ico" />
         
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"></link>
         

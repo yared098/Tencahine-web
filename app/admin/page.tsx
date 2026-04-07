@@ -15,7 +15,7 @@ import EditPartners from "./edit-partners/page";
 import EditContact from "./edit-contact/page";
 import EditConfig from "./config/page"; 
 import EditFeatures from "./edit-features/page";
-import EditHowtouse from "./howtowork/EditHowtouse"; // <--- 1. Import the new How it Works Editor
+import EditHowtouse from "./howtowork/EditHowtouse"; 
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -23,29 +23,40 @@ export default function AdminDashboard() {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  // --- AUTH PROTECTION ---
+  // --- HYDRATION FIX ---
+  // Ensures the component is fully mounted on the client before checking storage
   useEffect(() => {
-    const token = sessionStorage.getItem("tenachin_admin_token");
+    setMounted(true);
+  }, []);
+
+  // --- AUTH PROTECTION (FIXED: Uses localStorage to persist across refreshes) ---
+  useEffect(() => {
+    if (!mounted) return;
+
+    const token = localStorage.getItem("tenachin_admin_token");
     if (!token) {
-      router.push("/admin/login");
+      // Small delay to ensure router is ready
+      const timer = setTimeout(() => router.push("/admin/login"), 500);
+      return () => clearTimeout(timer);
     } else {
       setIsAuthorized(true);
     }
-  }, [router]);
+  }, [router, mounted]);
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [activeTab]);
 
-  // --- 2. ADD TO SIDEBAR SECTIONS ---
+  // --- 2. SIDEBAR SECTIONS ---
   const managementSections = [
     { title: "Dashboard", icon: "bi-grid-1x2-fill", color: "bg-slate-800" },
     { title: "Site Settings", icon: "bi-gear-wide-connected", color: "bg-teal-600" }, 
     { title: "Hero & Brand", icon: "bi-stars", color: "bg-blue-600" },
     { title: "Our Mission", icon: "bi-toggles", color: "bg-violet-600" },
     { title: "About Us", icon: "bi-info-circle-fill", color: "bg-indigo-600" },
-    { title: "How it Works", icon: "bi-command", color: "bg-orange-500" }, // <--- New Sidebar Item
+    { title: "How it Works", icon: "bi-command", color: "bg-orange-500" },
     { title: "Medical Services", icon: "bi-heart-pulse-fill", color: "bg-red-500" },
     { title: "Clinical Team", icon: "bi-people-fill", color: "bg-slate-700" },
     { title: "Testimonials", icon: "bi-chat-quote-fill", color: "bg-emerald-500" },
@@ -55,9 +66,12 @@ export default function AdminDashboard() {
   ];
 
   const handleLogout = () => {
-    sessionStorage.removeItem("tenachin_admin_token");
+    localStorage.removeItem("tenachin_admin_token");
     router.push("/admin/login");
   };
+
+  // Prevent server-side rendering mismatch
+  if (!mounted) return null;
 
   if (!isAuthorized) {
     return (
@@ -83,7 +97,7 @@ export default function AdminDashboard() {
       case "About Us": 
         return <EditAbout />;
       case "How it Works": 
-        return <EditHowtouse />; // <--- Rendering the new component
+        return <EditHowtouse />;
       case "Medical Services": 
         return <EditServices />;
       case "Clinical Team": 
@@ -104,7 +118,6 @@ export default function AdminDashboard() {
   return (
     <div className="flex min-h-screen bg-slate-50 selection:bg-blue-100 overflow-x-hidden">
       
-      {/* MOBILE OVERLAY */}
       {isMobileMenuOpen && (
         <div 
           className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] lg:hidden"
@@ -112,7 +125,6 @@ export default function AdminDashboard() {
         />
       )}
 
-      {/* SIDEBAR */}
       <aside className={`
         fixed inset-y-0 left-0 z-[70] lg:relative lg:flex
         ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
@@ -129,7 +141,7 @@ export default function AdminDashboard() {
           )}
         </div>
 
-        <nav className="flex-1 p-4 space-y-1 mt-4 overflow-y-auto custom-scrollbar">
+        <nav className="flex-1 p-4 space-y-1 mt-4 overflow-y-auto">
           {managementSections.map((section) => (
             <button
               key={section.title}
@@ -154,7 +166,6 @@ export default function AdminDashboard() {
         </button>
       </aside>
 
-      {/* MAIN VIEWPORT */}
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
         <header className="bg-white/80 backdrop-blur-md border-b border-slate-100 sticky top-0 z-40 px-4 md:px-8 py-4 flex justify-between items-center h-20">
           <div className="flex items-center gap-4">
@@ -197,7 +208,6 @@ export default function AdminDashboard() {
   );
 }
 
-// Sub-component for Dashboard Home remains the same...
 function DashboardHome({ setActiveTab, sections }: any) {
   return (
     <>
