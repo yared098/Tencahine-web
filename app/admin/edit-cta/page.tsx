@@ -236,7 +236,7 @@ export default function EditCTA() {
             disabled={saving}
             className="bg-slate-900 text-white px-8 py-4 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-blue-600 transition-all disabled:opacity-50"
           >
-            {saving ? "Publishing..." : "Sync to Live Site"}
+            {saving ? "Publishing..." : "Publish the Update"}
           </button>
         </div>
       </div>

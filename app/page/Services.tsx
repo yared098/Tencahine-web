@@ -29,11 +29,10 @@ const Services: React.FC = () => {
         const response = await fetch(`${apiUrl}/api/services_data`);
         const json = await response.json();
         
-        // Target the 'services_data' key specifically from your JSON
         const servicesList = json.services_data || [];
         
         setData({
-          badge: json.badge || null, // No default if you want it strictly from DB
+          badge: json.badge || null,
           title: json.title || null,
           services_list: servicesList
         });
@@ -47,7 +46,6 @@ const Services: React.FC = () => {
     fetchServices();
   }, []);
 
-  // GLOBAL GUARD: If not loading and list is empty, don't show the section at all
   if (!loading && (!data || data.services_list.length === 0)) return null;
 
   return (
@@ -56,7 +54,6 @@ const Services: React.FC = () => {
       className="py-24 md:py-32 relative overflow-hidden transition-colors duration-500 min-h-[600px] flex flex-col justify-center"
       style={{ backgroundColor: theme.backgroundColor }}
     >
-      {/* Background Decorative Element */}
       <div 
         className="absolute top-0 left-1/4 w-[500px] h-[500px] rounded-full blur-[120px] opacity-5 pointer-events-none"
         style={{ backgroundColor: theme.primaryColor }}
@@ -76,13 +73,19 @@ const Services: React.FC = () => {
           </div>
         ) : (
           <>
-            {/* Section Header - Only renders if title exists */}
             {(data?.title || data?.badge) && (
               <div className="max-w-3xl mx-auto text-center mb-24">
                 {data?.badge && (
                   <span 
-                    className="inline-block px-4 py-1.5 rounded-sm text-[10px] font-black uppercase tracking-[0.4em] mb-6 border border-white/10"
-                    style={{ color: theme.accentColor, backgroundColor: 'rgba(255,255,255,0.02)' }}
+                    className="inline-block px-5 py-2 rounded-sm font-black uppercase tracking-[0.4em] mb-6 border border-white/10"
+                    style={{ 
+                      /* DYNAMIC CHANGES START HERE */
+                      color: theme.accentColor, 
+                      fontSize: theme.fontSizeBase, // Uses your "16px"
+                      backgroundColor: 'rgba(255,255,255,0.02)',
+                      fontWeight: theme.headerFontWeight || '900'
+                      /* DYNAMIC CHANGES END HERE */
+                    }}
                   >
                     {data.badge}
                   </span>
@@ -109,17 +112,14 @@ const Services: React.FC = () => {
               </div>
             )}
 
-            {/* Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {data?.services_list.map((service, index) => (
-                // Only render the card if it has a title value
                 service.title && (
                   <div 
                     key={service.id || index}
                     className="group relative p-8 rounded-sm border border-white/5 transition-all duration-700 hover:border-white/20 flex flex-col h-full overflow-hidden"
                     style={{ backgroundColor: theme.cardColor }}
                   >
-                    {/* Hover Glow */}
                     <div 
                       className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
                       style={{ 
@@ -127,13 +127,11 @@ const Services: React.FC = () => {
                       }}
                     ></div>
 
-                    {/* Top Strip */}
                     <div 
                       className="absolute top-0 left-0 w-0 h-1 transition-all duration-500 group-hover:w-full"
                       style={{ backgroundColor: service.color || theme.primaryColor }}
                     ></div>
 
-                    {/* Icon - Only show if value exists */}
                     {service.icon && (
                       <div className="w-14 h-14 rounded-sm flex items-center justify-center mb-8 border border-white/5 bg-white/[0.02] transition-transform duration-500 group-hover:-rotate-12 group-hover:scale-110">
                         <i 
@@ -147,7 +145,6 @@ const Services: React.FC = () => {
                       {service.title}
                     </h4>
                     
-                    {/* Desc - Only show if value exists */}
                     {service.desc && (
                       <p className="text-slate-400 leading-relaxed text-sm font-medium flex-grow mb-10 group-hover:text-slate-300 transition-colors">
                         {service.desc}

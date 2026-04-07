@@ -309,7 +309,7 @@ export default function EditContact() {
           <div className="max-w-5xl mx-auto bg-white/80 backdrop-blur-md border border-slate-200 p-4 rounded-[2.5rem] shadow-2xl flex items-center justify-between px-8">
             <p className="text-xs text-slate-900 font-bold tracking-tight">{message || "Configuration live on server"}</p>
             <button type="submit" disabled={saving} className="bg-slate-900 hover:bg-blue-600 text-white px-10 py-4 rounded-full font-black text-xs tracking-widest transition-all active:scale-95 shadow-xl shadow-slate-200">
-              {saving ? "UPLOADING..." : "PUBLISH CHANGES"}
+              {saving ? "UPLOADING..." : "Publish the Update"}
             </button>
           </div>
         </div>

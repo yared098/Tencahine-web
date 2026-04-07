@@ -3,39 +3,62 @@
 import React, { useState, useEffect } from "react";
 import { useTheme } from "../context/ThemeContext";
 
-const slides = [
-  {
-    title: "Welcome to",
-    span: "Tenachin Telehealth",
-    description: "Born from deep experience and firsthand understanding of Africa’s healthcare challenges, Tenachin is not just another platform—it’s a revolution. Africa’s first multilingual, full-spectrum telehealth ecosystem.",
-    btnText: "Read More",
-    link: "#about"
-  },
-  {
-    title: "World-Class",
-    span: "Multi-Specialty Care",
-    description: "From emergency care to lifestyle coaching, tele-ICU to mental health—we deliver expert care led by a trusted team of renowned physicians and subspecialists anytime, anywhere.",
-    btnText: "Contact Us",
-    link: "#contact"
-  }
-];
+interface Slide {
+  title: string;
+  span: string;
+  description: string;
+  btnText: string;
+  link: string;
+}
 
 const HeroSection: React.FC = () => {
   const { theme } = useTheme();
+  const [slides, setSlides] = useState<Slide[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [slideInterval, setSlideInterval] = useState(5000);
 
-  // Auto-slide every 5 seconds
   useEffect(() => {
+    const fetchHeroData = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const response = await fetch(`${apiUrl}/api/hero`);
+        const data = await response.json();
+        
+        setSlides(data.slides || []);
+        
+        if (data.settings?.autoSlideInterval) {
+          setSlideInterval(data.settings.autoSlideInterval);
+        }
+      } catch (error) {
+        console.error("Failed to load hero slides:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchHeroData();
+  }, []);
+
+  useEffect(() => {
+    if (slides.length <= 1) return;
+    
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
-    }, 5000);
+    }, slideInterval);
+    
     return () => clearInterval(timer);
-  }, []);
+  }, [slides, slideInterval]);
 
   const nextSlide = () => setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
   const prevSlide = () => setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
 
-  if (!theme) return null;
+  if (!theme || loading || slides.length === 0) {
+      return (
+          <div className="min-h-screen flex items-center justify-center bg-slate-900">
+              <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+      );
+  }
 
   return (
     <section 
@@ -43,8 +66,6 @@ const HeroSection: React.FC = () => {
       className="relative min-h-screen flex items-center pt-20 overflow-hidden text-white"
       style={{ backgroundColor: theme.backgroundColor }}
     >
-      
-      {/* Background Glows - Using Primary and Accent colors with low opacity */}
       <div className="absolute inset-0 z-0">
         <div 
           className="absolute top-0 -left-1/4 w-1/2 h-1/2 rounded-full blur-[120px] opacity-20"
@@ -59,8 +80,7 @@ const HeroSection: React.FC = () => {
       <div className="container mx-auto px-4 relative z-10">
         <div className="relative w-full max-w-5xl mx-auto text-center">
           
-          {/* Carousel Content */}
-          <div className="min-h-[450px] md:min-h-[400px] flex flex-col justify-center items-center">
+          <div className="relative min-h-[450px] md:min-h-[400px] flex flex-col justify-center items-center">
             {slides.map((slide, index) => (
               <div
                 key={index}
@@ -70,45 +90,58 @@ const HeroSection: React.FC = () => {
                     : "opacity-0 translate-y-10 pointer-events-none"
                 }`}
               >
-                <h2 
-                  className="text-4xl md:text-7xl mb-6 leading-tight"
-                  style={{ fontWeight: theme.headerFontWeight }}
-                >
-                  {slide.title} <span style={{ color: theme.primaryColor }}>{slide.span}</span>
-                </h2>
-                <p className="text-lg md:text-xl text-slate-300 max-w-3xl mx-auto mb-10 leading-relaxed px-4">
-                  {slide.description}
-                </p>
-                <a
-                  href={slide.link}
-                  className="hero-btn inline-block px-10 py-4 rounded-full font-bold text-lg transition-all shadow-lg active:scale-95"
-                  style={{ 
-                    backgroundColor: theme.primaryColor,
-                    color: theme.backgroundColor,
-                    boxShadow: `0 10px 30px ${theme.primaryColor}33`
-                  }}
-                >
-                  {slide.btnText}
-                </a>
+                {/* Render title only if it exists */}
+                {slide.title && (
+                   <h2 
+                    className="text-4xl md:text-7xl mb-6 leading-tight"
+                    style={{ fontWeight: theme.headerFontWeight }}
+                  >
+                    {slide.title} {slide.span && <span style={{ color: theme.primaryColor }}>{slide.span}</span>}
+                  </h2>
+                )}
+
+                {/* Render description only if it exists */}
+                {slide.description && (
+                  <p className="text-lg md:text-xl text-slate-300 max-w-3xl mx-auto mb-10 leading-relaxed px-4">
+                    {slide.description}
+                  </p>
+                )}
+
+                {/* --- CONDITIONAL BUTTON RENDER --- */}
+                {slide.btnText && slide.link && (
+                  <a
+                    href={slide.link}
+                    className="hero-btn inline-block px-10 py-4 rounded-full font-bold text-lg transition-all shadow-lg active:scale-95"
+                    style={{ 
+                      backgroundColor: theme.primaryColor,
+                      color: theme.backgroundColor,
+                      boxShadow: `0 10px 30px ${theme.primaryColor}33`
+                    }}
+                  >
+                    {slide.btnText}
+                  </a>
+                )}
               </div>
             ))}
           </div>
 
-          {/* Controls */}
-          <button 
-            onClick={prevSlide}
-            className="absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-all group hidden md:flex"
-          >
-            <i className="bi bi-chevron-left text-2xl group-hover:-translate-x-1 transition-transform" style={{ color: theme.primaryColor }}></i>
-          </button>
-          <button 
-            onClick={nextSlide}
-            className="absolute right-0 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-all group hidden md:flex"
-          >
-            <i className="bi bi-chevron-right text-2xl group-hover:translate-x-1 transition-transform" style={{ color: theme.primaryColor }}></i>
-          </button>
+          {slides.length > 1 && (
+              <>
+                <button 
+                    onClick={prevSlide}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-all group hidden md:flex"
+                >
+                    <i className="bi bi-chevron-left text-2xl group-hover:-translate-x-1 transition-transform" style={{ color: theme.primaryColor }}></i>
+                </button>
+                <button 
+                    onClick={nextSlide}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-all group hidden md:flex"
+                >
+                    <i className="bi bi-chevron-right text-2xl group-hover:translate-x-1 transition-transform" style={{ color: theme.primaryColor }}></i>
+                </button>
+              </>
+          )}
 
-          {/* Indicators */}
           <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 flex gap-3">
             {slides.map((_, i) => (
               <button
@@ -125,7 +158,6 @@ const HeroSection: React.FC = () => {
         </div>
       </div>
 
-      {/* Modern Wave Divider */}
       <div className="absolute bottom-0 left-0 w-full leading-[0] z-20">
         <svg 
           className="relative block w-[calc(100%+1.3px)] h-[60px] md:h-[100px]" 

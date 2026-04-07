@@ -160,7 +160,7 @@ export default function AdminLogin() {
               className="w-full relative group overflow-hidden bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 text-white font-black py-4 rounded-2xl shadow-xl shadow-blue-900/20 transition-all active:scale-[0.98]"
             >
               <span className="relative flex items-center justify-center gap-2 uppercase tracking-widest text-xs">
-                {loading ? "Authenticating..." : "Establish Link"} 
+                {loading ? "Authenticating..." : "login "} 
                 {!loading && <Cpu size={16} />}
               </span>
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer"></div>

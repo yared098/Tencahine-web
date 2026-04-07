@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 // 1. IMPORT ALL SUB-PAGES AS COMPONENTS
+import EditHero from "./edit-hero/page"; // <--- Added for edithereo
 import EditFAQ from "./edit-faq/page";
 import EditCTA from "./edit-cta/page";
 import EditAbout from "./editabout/page";
@@ -25,19 +26,15 @@ export default function AdminDashboard() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // --- HYDRATION FIX ---
-  // Ensures the component is fully mounted on the client before checking storage
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // --- AUTH PROTECTION (FIXED: Uses localStorage to persist across refreshes) ---
   useEffect(() => {
     if (!mounted) return;
 
     const token = localStorage.getItem("tenachin_admin_token");
     if (!token) {
-      // Small delay to ensure router is ready
       const timer = setTimeout(() => router.push("/admin/login"), 500);
       return () => clearTimeout(timer);
     } else {
@@ -53,6 +50,7 @@ export default function AdminDashboard() {
   const managementSections = [
     { title: "Dashboard", icon: "bi-grid-1x2-fill", color: "bg-slate-800" },
     { title: "Site Settings", icon: "bi-gear-wide-connected", color: "bg-teal-600" }, 
+    { title: "edithereo", icon: "bi-layout-text-window-reverse", color: "bg-blue-500" }, // <--- New Section
     { title: "Hero & Brand", icon: "bi-stars", color: "bg-blue-600" },
     { title: "Our Mission", icon: "bi-toggles", color: "bg-violet-600" },
     { title: "About Us", icon: "bi-info-circle-fill", color: "bg-indigo-600" },
@@ -70,7 +68,6 @@ export default function AdminDashboard() {
     router.push("/admin/login");
   };
 
-  // Prevent server-side rendering mismatch
   if (!mounted) return null;
 
   if (!isAuthorized) {
@@ -90,6 +87,8 @@ export default function AdminDashboard() {
         return <DashboardHome setActiveTab={setActiveTab} sections={managementSections} />;
       case "Site Settings": 
         return <EditConfig />;
+      case "edithereo": // <--- Renders the new component
+        return <EditHero />;
       case "Hero & Brand": 
         return <EditCTA />;
       case "Our Mission": 
@@ -135,7 +134,7 @@ export default function AdminDashboard() {
           <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black shrink-0 shadow-lg shadow-blue-600/40">T</div>
           {(isSidebarOpen || isMobileMenuOpen) && (
             <div className="overflow-hidden whitespace-nowrap">
-              <h1 className="text-white font-black italic leading-none tracking-tighter">TENACHIN</h1>
+              <h1 className="text-white font-black italic leading-none tracking-tighter text-lg">TENACHIN</h1>
               <span className="text-[9px] text-blue-400 font-black uppercase tracking-widest">Admin Panel</span>
             </div>
           )}
@@ -153,7 +152,7 @@ export default function AdminDashboard() {
               }`}
             >
               <i className={`bi ${section.icon} text-lg`}></i>
-              {(isSidebarOpen || isMobileMenuOpen) && <span className="font-bold text-sm tracking-tight">{section.title}</span>}
+              {(isSidebarOpen || isMobileMenuOpen) && <span className="font-bold text-sm tracking-tight capitalize">{section.title}</span>}
             </button>
           ))}
         </nav>
@@ -166,7 +165,7 @@ export default function AdminDashboard() {
         </button>
       </aside>
 
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto bg-[#F8FAFC]">
         <header className="bg-white/80 backdrop-blur-md border-b border-slate-100 sticky top-0 z-40 px-4 md:px-8 py-4 flex justify-between items-center h-20">
           <div className="flex items-center gap-4">
             <button 
@@ -233,7 +232,7 @@ function DashboardHome({ setActiveTab, sections }: any) {
             <div className={`w-12 h-12 md:w-14 h-14 ${section.color} rounded-2xl flex items-center justify-center text-white text-xl md:text-2xl mb-6 shadow-xl shadow-black/5 group-hover:scale-110 transition-transform`}>
               <i className={`bi ${section.icon}`}></i>
             </div>
-            <h3 className="text-lg md:text-xl font-black text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">{section.title}</h3>
+            <h3 className="text-lg md:text-xl font-black text-slate-900 mb-2 group-hover:text-blue-600 transition-colors capitalize">{section.title}</h3>
             <p className="text-slate-400 text-xs md:text-sm font-medium mb-4 truncate">Update and manage this section live.</p>
             <div className="flex items-center gap-2 text-[10px] font-black text-blue-600 uppercase tracking-widest opacity-40 group-hover:opacity-100 transition-all">
               Launch Module <i className="bi bi-arrow-right"></i>

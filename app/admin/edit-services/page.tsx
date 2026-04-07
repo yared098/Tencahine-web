@@ -210,7 +210,7 @@ export default function EditServices() {
                 disabled={saving} 
                 className="w-full py-4 bg-white text-slate-900 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
                >
-                 {saving ? "SYNCING..." : "Publish to Tenachin"}
+                 {saving ? "SYNCING..." : "Publish the Update"}
                  <i className="bi bi-cloud-check-fill text-sm"></i>
                </button>
             </div>

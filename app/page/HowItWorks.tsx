@@ -44,7 +44,7 @@ const HowItWorks: React.FC = () => {
 
       <div className="container mx-auto px-4 relative z-10">
         
-        {/* 1. Section Header - Only shows if badge or title exists */}
+        {/* 1. Section Header */}
         {(data.header?.badge || data.header?.title) && (
           <div className="max-w-3xl mx-auto text-center mb-20">
             {data.header?.badge && (
@@ -87,16 +87,8 @@ const HowItWorks: React.FC = () => {
 
               return (
                 <div key={index} className="relative group h-full">
-                  {/* Step Number Background */}
-                  {item.step && item.step !== "⏱" && (
-                    <div className="absolute -top-12 -left-6 text-[120px] font-black opacity-5 group-hover:opacity-10 group-hover:-translate-y-4 transition-all duration-700 select-none -z-10 italic" style={{ color: stepColor }}>
-                      {item.step}
-                    </div>
-                  )}
-
                   <div className="flex flex-col h-full p-10 rounded-2xl border-2 transition-all duration-500 hover:border-white/20 group-hover:-translate-y-2 shadow-2xl" style={{ backgroundColor: theme.cardColor, borderColor: 'rgba(255, 255, 255, 0.08)' }}>
                     
-                    {/* Icon - Hidden if not found */}
                     {item.icon && (
                       <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-white text-3xl mb-10 transition-all duration-500 group-hover:scale-110" style={{ backgroundColor: stepColor, boxShadow: `0 15px 30px ${stepColor}40` }}>
                         <i className={`bi ${item.icon}`}></i>
@@ -118,12 +110,10 @@ const HowItWorks: React.FC = () => {
                       )}
                       
                       <div className="text-slate-400 text-sm leading-relaxed font-medium">
-                        {/* Text/Description Logic */}
                         {(item.type === "text" || item.description || item.content) && (
                           <p>{item.description || item.content}</p>
                         )}
                         
-                        {/* List Items Logic - Hidden if items array is empty */}
                         {item.type === "list" && item.items && item.items.length > 0 && (
                           <ul className="space-y-3">
                             {item.items.map((li: string, idx: number) => (
@@ -135,7 +125,6 @@ const HowItWorks: React.FC = () => {
                           </ul>
                         )}
 
-                        {/* Guarantee Logic - Hidden if no values */}
                         {item.type === "guarantee" && (item.emergency || item.general) && (
                           <div className="mt-2 p-4 rounded-xl border border-white/5" style={{ backgroundColor: `rgba(0,0,0,0.2)` }}>
                             {item.emergency && (
@@ -163,19 +152,21 @@ const HowItWorks: React.FC = () => {
           </div>
         )}
 
-        {/* 3. Video Player - Completely hidden if videoUrl is missing */}
+        {/* 3. Video Player - Updated rounded corners to 1rem */}
         {data.videoUrl && data.videoUrl.trim() !== "" && (
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-10">
                 <h3 className="text-white uppercase italic font-bold tracking-widest text-sm opacity-50">Visual Guide</h3>
             </div>
             
-            <div className="relative p-2 rounded-[2.5rem] bg-gradient-to-b from-white/10 to-transparent shadow-2xl">
-                <div className="relative aspect-video rounded-[2rem] overflow-hidden bg-black group">
+            {/* Main Video Wrapper */}
+            <div className="relative p-1.5 rounded-[1.2rem] bg-gradient-to-b from-white/10 to-transparent shadow-2xl">
+                <div className="relative aspect-video rounded-[1rem] overflow-hidden bg-black ring-1 ring-white/10 group">
                     <iframe 
                         src={data.videoUrl}
                         title="How Tenachin Works"
-                        className="absolute inset-0 w-full h-full z-10"
+                        className="absolute inset-0 w-full h-full z-10 border-0"
+                        style={{ borderRadius: "1rem" }} // Applying the 1rem rounded border
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
                     ></iframe>

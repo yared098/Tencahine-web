@@ -269,7 +269,7 @@ export default function EditTeamRoles() {
           disabled={saving}
           className="w-full py-5 bg-slate-900 text-white rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-blue-600 transition-all shadow-2xl disabled:opacity-50 flex items-center justify-center gap-3 border border-white/10"
         >
-          {saving ? "SAVING CHANGES..." : "PUBLISH WORKFORCE"}
+          {saving ? "SAVING CHANGES..." : "Publish the Update"}
           <i className="bi bi-cloud-arrow-up-fill text-lg"></i>
         </button>
       </div>

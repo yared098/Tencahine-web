@@ -151,7 +151,7 @@ export default function EditReviews() {
           <div className="fixed bottom-8 left-0 right-0 z-50 flex flex-col items-center gap-4">
             {message && <div className="bg-slate-900 text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest">{message}</div>}
             <button type="submit" disabled={saving} className="w-64 py-4 bg-blue-600 text-white rounded-full font-black shadow-2xl hover:scale-105 transition-transform active:scale-95 disabled:opacity-50">
-              {saving ? "SYNCING..." : "SYNC TO LIVE SITE"}
+              {saving ? "SYNCING..." : "Publish To Updated"}
             </button>
           </div>
         </form>

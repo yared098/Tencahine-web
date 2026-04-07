@@ -177,7 +177,7 @@ export default function EditFeatures() {
           <div className="max-w-lg mx-auto">
             {message && <div className="mb-4 bg-slate-900 text-white p-4 rounded-2xl text-center font-black text-xs uppercase tracking-widest shadow-2xl">{message}</div>}
             <button type="submit" disabled={saving} className="w-full py-6 bg-blue-600 text-white rounded-[2.5rem] font-black text-xl hover:bg-blue-700 transition-all shadow-2xl disabled:opacity-50 flex items-center justify-center gap-4">
-              {saving ? "PUBLISHING..." : "UPDATE BRAND STRATEGY"}
+              {saving ? "PUBLISHING..." : "Publish the Update"}
               <i className="bi bi-send-fill"></i>
             </button>
           </div>

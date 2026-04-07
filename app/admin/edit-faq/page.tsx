@@ -162,7 +162,7 @@ export default function EditFAQ() {
               disabled={saving}
               className="w-full py-5 md:py-6 bg-blue-600 text-white rounded-full font-black text-lg md:text-xl shadow-[0_20px_50px_rgba(37,99,235,0.3)] hover:bg-blue-700 active:scale-95 disabled:opacity-50 transition-all flex items-center justify-center gap-4 group"
             >
-              {saving ? "SYNCING..." : "PUBLISH TO APP"}
+              {saving ? "SYNCING..." : "Publish the Update"}
               <i className="bi bi-cloud-check-fill group-hover:translate-y-[-2px] transition-transform"></i>
             </button>
           </div>

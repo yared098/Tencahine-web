@@ -201,7 +201,7 @@ export default function EditPartners() {
               </div>
             )}
             <button type="submit" disabled={saving} className="w-full py-6 bg-blue-600 text-white rounded-[2.5rem] font-black text-sm uppercase tracking-[0.2em] hover:bg-blue-500 transition-all shadow-xl flex items-center justify-center gap-3">
-              {saving ? "SAVING..." : "Confirm & Publish"}
+              {saving ? "SAVING..." : "Publish the Update"}
               {!saving && <i className="bi bi-lightning-fill"></i>}
             </button>
           </div>

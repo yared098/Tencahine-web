@@ -207,7 +207,7 @@ export default function EditAbout() {
             <p className="text-xs font-bold text-blue-600 mt-1">{message || "Awaiting Changes"}</p>
           </div>
           <button onClick={handleSubmit} disabled={saving} className="bg-slate-900 text-white px-10 py-4 rounded-xl font-black text-xs uppercase tracking-[0.1em] hover:bg-blue-600 transition-all disabled:opacity-50 shadow-xl shadow-slate-200">
-            {saving ? "Publishing..." : "Publish to Site"}
+            {saving ? "Publishing..." : "Publish the Update"}
           </button>
         </div>
       </div>

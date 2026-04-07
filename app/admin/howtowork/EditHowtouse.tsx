@@ -250,7 +250,7 @@ export default function EditHowtouse() {
             className="bg-blue-600 text-white px-10 py-4 rounded-full font-black text-xs uppercase tracking-widest hover:bg-blue-500 active:scale-95 transition-all flex items-center gap-3 disabled:opacity-50"
           >
             {saving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : <i className="bi bi-send-fill"></i>}
-            {saving ? "Syncing..." : "Publish Content"}
+            {saving ? "Syncing..." : "Publish the Update"}
           </button>
         </div>
       </div>
